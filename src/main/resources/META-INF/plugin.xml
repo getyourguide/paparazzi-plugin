@@ -34,5 +34,23 @@
                 class="com.madrapps.paparazzi.actions.RefreshAction"
                 icon="AllIcons.Actions.Refresh"
                 text="Refresh"/>
+
+        <action class="com.madrapps.paparazzi.actions.ZoomInAction"
+                id="com.madrapps.paparazzi.actions.ZoomInAction"
+                icon="AllIcons.Graph.ZoomIn"
+                use-shortcut-of="ExpandAll"/>
+        <action class="com.madrapps.paparazzi.actions.ZoomOutAction"
+                id="com.madrapps.paparazzi.actions.ZoomOutAction"
+                icon="AllIcons.Graph.ZoomOut"
+                use-shortcut-of="CollapseAll"/>
+        <action class="com.madrapps.paparazzi.actions.ActualSizeAction"
+                id="com.madrapps.paparazzi.actions.ActualSizeAction"
+                icon="AllIcons.Graph.ActualZoom">
+            <keyboard-shortcut first-keystroke="control DIVIDE" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="control SLASH" keymap="$default"/>
+        </action>
+        <action class="com.madrapps.paparazzi.actions.FitZoomToWindowAction"
+                id="com.madrapps.paparazzi.actions.FitZoomToWindowAction"
+                icon="AllIcons.General.FitContent"/>
     </actions>
 </idea-plugin>

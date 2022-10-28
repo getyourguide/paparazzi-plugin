@@ -8,18 +8,15 @@ import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.content.ContentFactory
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.intellij.uiDesigner.core.GridLayoutManager
-import com.intellij.util.EditSourceOnDoubleClickHandler
-import com.madrapps.paparazzi.actions.RefreshAction
+import com.madrapps.paparazzi.actions.*
 import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 import java.awt.BorderLayout
-import java.awt.FlowLayout
 import java.awt.Image
 import java.awt.Insets
 import javax.imageio.ImageIO
@@ -28,9 +25,7 @@ import javax.swing.BoxLayout
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.ScrollPaneConstants
 import javax.swing.ScrollPaneConstants.*
-import javax.swing.tree.TreeSelectionModel
 
 class PaparazziWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -75,7 +70,7 @@ class MyPanel(private val toolWindow: ToolWindow, project: Project) : SimpleTool
 
         val children = modules[90].rootManager.contentRoots[0].children[1].children[0].children
 
-        children.take(15).forEach { child ->
+        children.take(25).forEach { child ->
             val read = ImageIO.read(child.inputStream)
             val width = read.width.toFloat()
             val height = read.height.toFloat()
@@ -95,15 +90,25 @@ class MyPanel(private val toolWindow: ToolWindow, project: Project) : SimpleTool
             row = 1
             fill = FILL_BOTH
         })
+
         return panel
     }
 
     private fun initToolbar(toolbar: JPanel) {
         val manager = ActionManager.getInstance()
         val refreshAction = manager.getAction(RefreshAction.ID)
+        val zoomInAction = manager.getAction(ZoomInAction.ID)
+        val zoomOutAction = manager.getAction(ZoomOutAction.ID)
+        val actualSizeAction = manager.getAction(ActualSizeAction.ID)
+        val fitZoomToWindowAction = manager.getAction(FitZoomToWindowAction.ID)
 
         val toolbarActionGroup = DefaultActionGroup().apply {
             add(refreshAction)
+            addSeparator()
+            add(zoomInAction)
+            add(zoomOutAction)
+            add(actualSizeAction)
+            add(fitZoomToWindowAction)
         }
 
         val actionToolbar = manager.createActionToolbar(ActionPlaces.TOOLWINDOW_TITLE, toolbarActionGroup, true)
