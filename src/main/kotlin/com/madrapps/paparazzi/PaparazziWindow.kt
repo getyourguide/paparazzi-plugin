@@ -15,6 +15,7 @@ import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.intellij.uiDesigner.core.GridLayoutManager
 import com.madrapps.paparazzi.actions.*
+import com.madrapps.paparazzi.service.service
 import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 import java.awt.BorderLayout
 import java.awt.Image
@@ -33,58 +34,62 @@ class PaparazziWindow : ToolWindowFactory {
     }
 }
 
-class MyPanel(private val toolWindow: ToolWindow, project: Project) : SimpleToolWindowPanel(true, true) {
+class MyPanel(toolWindow: ToolWindow, project: Project) : SimpleToolWindowPanel(true, true), PaparazziWindowPanel {
+
+    override val list: JPanel = JPanel()
 
     init {
         val content = ContentFactory.SERVICE.getInstance().createContent(this, "", false)
         toolWindow.contentManager.addContent(content)
+
+        val boxLayout = BoxLayout(list, BoxLayout.Y_AXIS)
+        list.layout = boxLayout
+        list.border = BorderFactory.createEmptyBorder(32, 32, 32, 32)
+
         setContent(getContentPanel(project))
+        project.service.panel = this
     }
 
     private fun getContentPanel(project: Project): JPanel {
+
         val panel = JBPanel<SimpleToolWindowPanel>(
             GridLayoutManager(
-                2,
-                1,
-                Insets(0, 0, 0, 0),
-                0,
-                0
+                2, 1, Insets(0, 0, 0, 0), 0, 0
             )
         )
 
         val toolbar = JPanel(BorderLayout())
         initToolbar(toolbar)
+
         panel.add(toolbar, GridConstraints().apply {
             row = 0
             fill = FILL_BOTH
             vSizePolicy = SIZEPOLICY_FIXED
         })
 
-        val jPanel = JPanel()
-        val boxLayout = BoxLayout(jPanel, BoxLayout.Y_AXIS)
-        jPanel.layout = boxLayout
-        jPanel.border = BorderFactory.createEmptyBorder(32, 32, 32, 32)
-
         val modules = project.allModules()
         val sourceRoots = modules[0].rootManager.sourceRoots
 
-        val children = modules[90].rootManager.contentRoots[0].children[1].children[0].children
+        val test = modules[90].rootManager.contentRoots.find {
+            it.path.endsWith("src/test")
+        }
+        if (test != null) {
+            val children = test.children[1].children[0].children
 
-        children.take(25).forEach { child ->
-            val read = ImageIO.read(child.inputStream)
-            val width = read.width.toFloat()
-            val height = read.height.toFloat()
-            val newHeight = (height/width*300).toInt()
-            val scaledInstance = read.getScaledInstance(300, newHeight, Image.SCALE_SMOOTH)
-            val jLabel = JLabel(ImageIcon(scaledInstance))
-            jLabel.border = BorderFactory.createEmptyBorder(32, 32, 32, 32)
-            jPanel.add(jLabel)
+            children.take(25).forEach { child ->
+                val read = ImageIO.read(child.inputStream)
+                val width = read.width.toFloat()
+                val height = read.height.toFloat()
+                val newHeight = (height / width * 300).toInt()
+                val scaledInstance = read.getScaledInstance(300, newHeight, Image.SCALE_SMOOTH)
+                val jLabel = JLabel(ImageIcon(scaledInstance))
+                jLabel.border = BorderFactory.createEmptyBorder(32, 32, 32, 32)
+                list.add(jLabel)
+            }
         }
 
         val jbScrollPane = JBScrollPane(
-            jPanel,
-            VERTICAL_SCROLLBAR_AS_NEEDED,
-            HORIZONTAL_SCROLLBAR_AS_NEEDED
+            list, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED
         )
         panel.add(jbScrollPane, GridConstraints().apply {
             row = 1
@@ -115,4 +120,9 @@ class MyPanel(private val toolWindow: ToolWindow, project: Project) : SimpleTool
         actionToolbar.targetComponent = toolbar
         toolbar.add(actionToolbar.component)
     }
+}
+
+interface PaparazziWindowPanel {
+
+    val list: JPanel
 }

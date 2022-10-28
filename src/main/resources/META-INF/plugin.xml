@@ -27,6 +27,8 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.madrapps.paparazzi.PaparazziWindow" id="Paparazzi" anchor="right"/>
+        <projectService serviceInterface="com.madrapps.paparazzi.service.MainService"
+                        serviceImplementation="com.madrapps.paparazzi.service.MainServiceImpl"/>
     </extensions>
 
     <actions>
