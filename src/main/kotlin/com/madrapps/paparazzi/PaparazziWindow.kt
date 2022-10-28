@@ -6,27 +6,24 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.content.ContentFactory
 import com.intellij.uiDesigner.core.GridConstraints
-import com.intellij.uiDesigner.core.GridConstraints.*
+import com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH
+import com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED
 import com.intellij.uiDesigner.core.GridLayoutManager
 import com.madrapps.paparazzi.actions.*
 import com.madrapps.paparazzi.service.service
 import org.jetbrains.kotlin.idea.util.projectStructure.allModules
-import java.awt.BorderLayout
-import java.awt.Image
-import java.awt.Insets
-import javax.imageio.ImageIO
-import javax.swing.BorderFactory
-import javax.swing.BoxLayout
-import javax.swing.ImageIcon
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.ScrollPaneConstants.*
+import java.awt.*
+import javax.swing.*
+import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
 class PaparazziWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -73,23 +70,26 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : SimpleToolWindowPanel(
         val test = modules[90].rootManager.contentRoots.find {
             it.path.endsWith("src/test")
         }
+
+        val model = DefaultListModel<Item>()
+        val jbList = object : JBList<Item>(model) {
+            override fun getScrollableUnitIncrement(visibleRect: Rectangle?, orientation: Int, direction: Int): Int {
+                return 30
+            }
+        }
+
+        jbList.cellRenderer = Renderer(project)
+
+
         if (test != null) {
             val children = test.children[1].children[0].children
-
             children.take(25).forEach { child ->
-                val read = ImageIO.read(child.inputStream)
-                val width = read.width.toFloat()
-                val height = read.height.toFloat()
-                val newHeight = (height / width * 300).toInt()
-                val scaledInstance = read.getScaledInstance(300, newHeight, Image.SCALE_SMOOTH)
-                val jLabel = JLabel(ImageIcon(scaledInstance))
-                jLabel.border = BorderFactory.createEmptyBorder(32, 32, 32, 32)
-                list.add(jLabel)
+                model.addElement(Item(child))
             }
         }
 
         val jbScrollPane = JBScrollPane(
-            list, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED
+            jbList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED
         )
         panel.add(jbScrollPane, GridConstraints().apply {
             row = 1
@@ -125,4 +125,22 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : SimpleToolWindowPanel(
 interface PaparazziWindowPanel {
 
     val list: JPanel
+}
+
+data class Item(val file: VirtualFile)
+
+class Renderer(private val project: Project) : ListCellRenderer<Item> {
+    override fun getListCellRendererComponent(
+        list: JList<out Item>?,
+        value: Item,
+        index: Int,
+        isSelected: Boolean,
+        cellHasFocus: Boolean
+    ): Component {
+        val image = project.service.image(value)
+        val jLabel = JLabel(ImageIcon(image))
+        jLabel.border = BorderFactory.createEmptyBorder(32, 32, 32, 32)
+        jLabel.isEnabled = false
+        return jLabel
+    }
 }
