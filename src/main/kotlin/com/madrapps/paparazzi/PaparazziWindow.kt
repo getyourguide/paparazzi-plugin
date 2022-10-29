@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
@@ -19,7 +18,6 @@ import com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED
 import com.intellij.uiDesigner.core.GridLayoutManager
 import com.madrapps.paparazzi.actions.*
 import com.madrapps.paparazzi.service.service
-import org.jetbrains.kotlin.idea.util.projectStructure.allModules
 import java.awt.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -123,7 +121,12 @@ abstract class PaparazziWindowPanel : SimpleToolWindowPanel(true, true) {
     abstract val list: JBList<Item>
 }
 
-data class Item(val file: VirtualFile)
+data class Item(val file: VirtualFile, val qualifiedTestName: String) {
+
+    fun screenshotName(): String {
+        return file.nameWithoutExtension.substringAfter(qualifiedTestName + "_")
+    }
+}
 
 class Renderer(private val project: Project) : ListCellRenderer<Item> {
     override fun getListCellRendererComponent(
@@ -134,7 +137,7 @@ class Renderer(private val project: Project) : ListCellRenderer<Item> {
         cellHasFocus: Boolean
     ): Component {
         val image = project.service.image(value)
-        val title = JLabel("Hello how are you?").apply {
+        val title = JLabel(value.screenshotName()).apply {
             border = BorderFactory.createEmptyBorder(0, 0, 8, 0)
         }
         val screenshot = JLabel(ImageIcon(image))
@@ -142,7 +145,7 @@ class Renderer(private val project: Project) : ListCellRenderer<Item> {
         val panel = JPanel()
         val boxLayout = BoxLayout(panel, BoxLayout.Y_AXIS)
         panel.layout = boxLayout
-        panel.border = BorderFactory.createEmptyBorder(16, 16, 16, 16)
+        panel.border = BorderFactory.createEmptyBorder(32, 16, 32, 16)
 
         panel.add(title)
         panel.add(screenshot)

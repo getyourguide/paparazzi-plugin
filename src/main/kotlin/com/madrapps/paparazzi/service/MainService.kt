@@ -147,7 +147,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                 }
 
                 filter.forEach {
-                    model.addElement(Item(it))
+                    model.addElement(Item(it, name))
                 }
             }
 
