@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.idea.util.projectStructure.getModule
 import java.awt.Image
 import javax.imageio.ImageIO
 import javax.swing.DefaultListModel
+import javax.swing.SwingUtilities
 
 interface MainService {
 
@@ -119,38 +120,36 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     }
 
     override fun reload(file: VirtualFile) {
-        screenshotMap.clear() // FIXME enable LRU cache
+        SwingUtilities.invokeLater {
+            screenshotMap.clear() // FIXME enable LRU cache
 
-        val nameWithoutExtension = file.nameWithoutExtension
-        println(nameWithoutExtension)
+            val nameWithoutExtension = file.nameWithoutExtension
+            println(nameWithoutExtension)
 
-        val psiFile = PsiManager.getInstance(project).findFile(file) as? PsiClassOwner
-        if (psiFile != null) {
-            model.clear()
+            val psiFile = PsiManager.getInstance(project).findFile(file) as? PsiClassOwner
+            if (psiFile != null) {
+                model.clear()
 
-            val images = file.getModule(project)?.rootManager?.contentRoots?.find {
-                it.name == "test"
-            }?.children?.find {
-                it.name == "snapshots"
-            }?.children?.find {
-                it.name == "images"
-            }?.children ?: emptyArray()
+                val images = file.getModule(project)?.rootManager?.contentRoots?.find {
+                    it.name == "test"
+                }?.findChild("snapshots")?.findChild("images")?.children ?: emptyArray()
 
-            val packageName = psiFile.packageName
-            psiFile.classes.forEach { psiClass ->
-                println("XXDD - packageName = $packageName")
-                println("XXDD - name = ${psiClass.name}")
+                val packageName = psiFile.packageName
+                psiFile.classes.forEach { psiClass ->
+                    println("XXDD - packageName = $packageName")
+                    println("XXDD - name = ${psiClass.name}")
 
-                val name = "${packageName}_${psiClass.name}"
-                val filter = images.filter {
-                    it.name.startsWith(name)
+                    val name = "${packageName}_${psiClass.name}"
+                    val filter = images.filter {
+                        it.name.startsWith(name)
+                    }
+
+                    filter.forEach {
+                        model.addElement(Item(it, name))
+                    }
                 }
 
-                filter.forEach {
-                    model.addElement(Item(it, name))
-                }
             }
-
         }
     }
 
