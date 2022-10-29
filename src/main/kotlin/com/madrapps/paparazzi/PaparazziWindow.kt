@@ -31,17 +31,19 @@ class PaparazziWindow : ToolWindowFactory {
     }
 }
 
-class MyPanel(toolWindow: ToolWindow, project: Project) : SimpleToolWindowPanel(true, true), PaparazziWindowPanel {
+class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel() {
 
-    override val list: JPanel = JPanel()
+    private val model = project.service.model
+    override val list = object : JBList<Item>(model) {
+        override fun getScrollableUnitIncrement(visibleRect: Rectangle?, orientation: Int, direction: Int): Int {
+            return 30
+        }
+    }
 
     init {
         val content = ContentFactory.SERVICE.getInstance().createContent(this, "", false)
         toolWindow.contentManager.addContent(content)
-
-        val boxLayout = BoxLayout(list, BoxLayout.Y_AXIS)
-        list.layout = boxLayout
-        list.border = BorderFactory.createEmptyBorder(32, 32, 32, 32)
+        list.cellRenderer = Renderer(project)
 
         setContent(getContentPanel(project))
         project.service.panel = this
@@ -71,16 +73,6 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : SimpleToolWindowPanel(
             it.path.endsWith("src/test")
         }
 
-        val model = DefaultListModel<Item>()
-        val jbList = object : JBList<Item>(model) {
-            override fun getScrollableUnitIncrement(visibleRect: Rectangle?, orientation: Int, direction: Int): Int {
-                return 30
-            }
-        }
-
-        jbList.cellRenderer = Renderer(project)
-
-
         if (test != null) {
             val children = test.children[1].children[0].children
             children.take(25).forEach { child ->
@@ -89,8 +81,10 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : SimpleToolWindowPanel(
         }
 
         val jbScrollPane = JBScrollPane(
-            jbList, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED
+            list, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED
         )
+        list.foreground = Color.RED
+        jbScrollPane.background = Color.GREEN
         panel.add(jbScrollPane, GridConstraints().apply {
             row = 1
             fill = FILL_BOTH
@@ -122,9 +116,9 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : SimpleToolWindowPanel(
     }
 }
 
-interface PaparazziWindowPanel {
+abstract class PaparazziWindowPanel : SimpleToolWindowPanel(true, true) {
 
-    val list: JPanel
+    abstract val list: JBList<Item>
 }
 
 data class Item(val file: VirtualFile)
@@ -138,9 +132,18 @@ class Renderer(private val project: Project) : ListCellRenderer<Item> {
         cellHasFocus: Boolean
     ): Component {
         val image = project.service.image(value)
-        val jLabel = JLabel(ImageIcon(image))
-        jLabel.border = BorderFactory.createEmptyBorder(32, 32, 32, 32)
-        jLabel.isEnabled = false
-        return jLabel
+        val title = JLabel("Hello how are you?").apply {
+            border = BorderFactory.createEmptyBorder(0, 0, 8, 0)
+        }
+        val screenshot = JLabel(ImageIcon(image))
+
+        val panel = JPanel()
+        val boxLayout = BoxLayout(panel, BoxLayout.Y_AXIS)
+        panel.layout = boxLayout
+        panel.border = BorderFactory.createEmptyBorder(16, 16, 16, 16)
+
+        panel.add(title)
+        panel.add(screenshot)
+        return panel
     }
 }

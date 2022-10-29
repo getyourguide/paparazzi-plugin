@@ -11,9 +11,12 @@ import com.madrapps.paparazzi.PaparazziWindowPanel
 import org.jetbrains.kotlin.idea.util.application.getService
 import java.awt.Image
 import javax.imageio.ImageIO
+import javax.swing.AbstractListModel
 import javax.swing.BorderFactory
+import javax.swing.DefaultListModel
 import javax.swing.ImageIcon
 import javax.swing.JLabel
+import javax.swing.ListModel
 
 interface MainService {
 
@@ -23,34 +26,80 @@ interface MainService {
     }
 
     var panel: PaparazziWindowPanel?
+    val model: DefaultListModel<Item>
 
     fun image(item: Item): Image
+
+    fun zoomFitToWindow()
+    fun zoomActualSize()
+
+    fun reload()
 }
 
 @State(name = "com.madrapps.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
 class MainServiceImpl(private val project: Project) : MainService, PersistentStateComponent<MainService.Storage> {
 
+    private val MAX_ZOOM_WIDTH = 700
+    private val MIN_ZOOM_WIDTH = 200
+
     private var storage = MainService.Storage()
     private val screenshotMap: MutableMap<VirtualFile, Image> = mutableMapOf()
+    private var width: Int = 0
 
     override var panel: PaparazziWindowPanel? = null
+    override val model: DefaultListModel<Item> = DefaultListModel()
 
     override fun image(item: Item): Image {
         val file = item.file
         val image = screenshotMap[file]
         return if (image == null) {
             val read = ImageIO.read(file.inputStream)
-            val width = read.width.toFloat()
-            val height = read.height.toFloat()
-            val newHeight = (height / width * 300).toInt()
-            //val scaledInstance = read.getScaledInstance(300, newHeight, Image.SCALE_SMOOTH)
-            screenshotMap[file] = read
-            read
+            val im = if (width == 0) {
+                read
+            } else {
+                val width = read.width.toFloat()
+                val height = read.height.toFloat()
+                val newWidth = this.width
+                var newHeight = (height / width * newWidth).toInt()
+                if (newHeight == 0) newHeight = 20
+                read.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH)
+            }
+            screenshotMap[file] = im
+            im
         } else {
             image
         }
     }
 
+
+    override fun zoomFitToWindow() {
+        screenshotMap.clear()
+        panel?.let {
+            val tmp = it.width - 32
+            width = if (tmp > MAX_ZOOM_WIDTH) {
+                MAX_ZOOM_WIDTH
+            } else if (tmp < MIN_ZOOM_WIDTH) {
+                MIN_ZOOM_WIDTH
+            } else {
+                tmp
+            }
+            reload()
+        }
+    }
+
+    override fun zoomActualSize() {
+        screenshotMap.clear()
+        width = 0
+        reload()
+    }
+
+    override fun reload() {
+        val toList = model.elements().toList()
+        model.clear()
+        toList.forEach { item ->
+            model.addElement(item)
+        }
+    }
 
     override fun getState(): MainService.Storage {
         return storage
@@ -59,7 +108,6 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override fun loadState(state: MainService.Storage) {
         storage = state
     }
-
 }
 
 val Project.service: MainService

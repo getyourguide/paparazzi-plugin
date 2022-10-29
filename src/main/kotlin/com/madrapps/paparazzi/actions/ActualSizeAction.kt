@@ -2,6 +2,7 @@ package com.madrapps.paparazzi.actions
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.madrapps.paparazzi.service.service
 
 class ActualSizeAction : AnAction() {
 
@@ -10,6 +11,6 @@ class ActualSizeAction : AnAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-
+        e.project?.service?.zoomActualSize()
     }
 }
