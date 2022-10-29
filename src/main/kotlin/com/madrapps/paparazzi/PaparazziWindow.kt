@@ -66,19 +66,19 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel()
             vSizePolicy = SIZEPOLICY_FIXED
         })
 
-        val modules = project.allModules()
-        val sourceRoots = modules[0].rootManager.sourceRoots
+//        val modules = project.allModules()
+//        val sourceRoots = modules[0].rootManager.sourceRoots
 
-        val test = modules[90].rootManager.contentRoots.find {
-            it.path.endsWith("src/test")
-        }
-
-        if (test != null) {
-            val children = test.children[1].children[0].children
-            children.take(25).forEach { child ->
-                model.addElement(Item(child))
-            }
-        }
+//        val test = modules[90].rootManager.contentRoots.find {
+//            it.path.endsWith("src/test")
+//        }
+//
+//        if (test != null) {
+//            val children = test.children[1].children[0].children
+//            children.take(25).forEach { child ->
+//                model.addElement(Item(child))
+//            }
+//        }
 
         val jbScrollPane = JBScrollPane(
             list, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -96,6 +96,7 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel()
     private fun initToolbar(toolbar: JPanel) {
         val manager = ActionManager.getInstance()
         val refreshAction = manager.getAction(RefreshAction.ID)
+        val autoChangeAction = manager.getAction(AutoChangeAction.ID)
         val zoomInAction = manager.getAction(ZoomInAction.ID)
         val zoomOutAction = manager.getAction(ZoomOutAction.ID)
         val actualSizeAction = manager.getAction(ActualSizeAction.ID)
@@ -103,6 +104,7 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel()
 
         val toolbarActionGroup = DefaultActionGroup().apply {
             add(refreshAction)
+            add(autoChangeAction)
             addSeparator()
             add(zoomInAction)
             add(zoomOutAction)

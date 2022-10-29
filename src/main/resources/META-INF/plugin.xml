@@ -36,23 +36,30 @@
                 class="com.madrapps.paparazzi.actions.RefreshAction"
                 icon="AllIcons.Actions.Refresh"
                 text="Refresh"/>
+        <action id="com.madrapps.paparazzi.actions.AutoChangeAction" icon="AllIcons.General.AutoscrollToSource"
+                text="Show Screenshots for Current File"
+                class="com.madrapps.paparazzi.actions.AutoChangeAction"/>
 
         <action class="com.madrapps.paparazzi.actions.ZoomInAction"
                 id="com.madrapps.paparazzi.actions.ZoomInAction"
                 icon="AllIcons.Graph.ZoomIn"
+                text="Zoom In"
                 use-shortcut-of="ExpandAll"/>
         <action class="com.madrapps.paparazzi.actions.ZoomOutAction"
                 id="com.madrapps.paparazzi.actions.ZoomOutAction"
                 icon="AllIcons.Graph.ZoomOut"
+                text="Zoom Out"
                 use-shortcut-of="CollapseAll"/>
         <action class="com.madrapps.paparazzi.actions.ActualSizeAction"
                 id="com.madrapps.paparazzi.actions.ActualSizeAction"
+                text="Actual Size"
                 icon="AllIcons.Graph.ActualZoom">
             <keyboard-shortcut first-keystroke="control DIVIDE" keymap="$default"/>
             <keyboard-shortcut first-keystroke="control SLASH" keymap="$default"/>
         </action>
         <action class="com.madrapps.paparazzi.actions.FitZoomToWindowAction"
                 id="com.madrapps.paparazzi.actions.FitZoomToWindowAction"
+                text="Fit Zoom to Window"
                 icon="AllIcons.General.FitContent"/>
     </actions>
 </idea-plugin>

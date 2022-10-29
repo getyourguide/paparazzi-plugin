@@ -7,9 +7,13 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiClassOwner
+import com.intellij.psi.PsiManager
 import com.madrapps.paparazzi.Item
 import com.madrapps.paparazzi.PaparazziWindowPanel
+import org.jetbrains.kotlin.idea.util.projectStructure.getModule
 import java.awt.Image
 import javax.imageio.ImageIO
 import javax.swing.DefaultListModel
@@ -19,10 +23,13 @@ interface MainService {
     class Storage {
         // path to snapshots
         // no of screenshots to show at a time (everything at once can cause OOM)
+
+        var isAutoChangeEnabled = true
     }
 
     var panel: PaparazziWindowPanel?
     val model: DefaultListModel<Item>
+    val settings: Storage
 
     fun image(item: Item): Image
 
@@ -30,6 +37,7 @@ interface MainService {
     fun zoomActualSize()
 
     fun reload()
+    fun reload(file: VirtualFile)
 }
 
 @State(name = "com.madrapps.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
@@ -52,7 +60,9 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun selectionChanged(event: FileEditorManagerEvent) {
         super.selectionChanged(event)
-        println("File being viewed - ${event.newFile.nameWithoutExtension}")
+        if (project.service.settings.isAutoChangeEnabled) {
+            event.newFile?.let { project.service.reload(it) }
+        }
     }
 
     override fun image(item: Item): Image {
@@ -100,10 +110,47 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     }
 
     override fun reload() {
+        screenshotMap.clear() // FIXME enable LRU cache
         val toList = model.elements().toList()
         model.clear()
         toList.forEach { item ->
             model.addElement(item)
+        }
+    }
+
+    override fun reload(file: VirtualFile) {
+        screenshotMap.clear() // FIXME enable LRU cache
+
+        val nameWithoutExtension = file.nameWithoutExtension
+        println(nameWithoutExtension)
+
+        val psiFile = PsiManager.getInstance(project).findFile(file) as? PsiClassOwner
+        if (psiFile != null) {
+            model.clear()
+
+            val images = file.getModule(project)?.rootManager?.contentRoots?.find {
+                it.name == "test"
+            }?.children?.find {
+                it.name == "snapshots"
+            }?.children?.find {
+                it.name == "images"
+            }?.children ?: emptyArray()
+
+            val packageName = psiFile.packageName
+            psiFile.classes.forEach { psiClass ->
+                println("XXDD - packageName = $packageName")
+                println("XXDD - name = ${psiClass.name}")
+
+                val name = "${packageName}_${psiClass.name}"
+                val filter = images.filter {
+                    it.name.startsWith(name)
+                }
+
+                filter.forEach {
+                    model.addElement(Item(it))
+                }
+            }
+
         }
     }
 
@@ -114,6 +161,9 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override fun loadState(state: MainService.Storage) {
         storage = state
     }
+
+    override val settings: MainService.Storage
+        get() = state
 }
 
 val Project.service: MainService
