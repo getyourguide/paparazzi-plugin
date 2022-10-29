@@ -4,19 +4,15 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent
+import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.madrapps.paparazzi.Item
 import com.madrapps.paparazzi.PaparazziWindowPanel
-import org.jetbrains.kotlin.idea.util.application.getService
 import java.awt.Image
 import javax.imageio.ImageIO
-import javax.swing.AbstractListModel
-import javax.swing.BorderFactory
 import javax.swing.DefaultListModel
-import javax.swing.ImageIcon
-import javax.swing.JLabel
-import javax.swing.ListModel
 
 interface MainService {
 
@@ -37,7 +33,8 @@ interface MainService {
 }
 
 @State(name = "com.madrapps.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
-class MainServiceImpl(private val project: Project) : MainService, PersistentStateComponent<MainService.Storage> {
+class MainServiceImpl(private val project: Project) : MainService, PersistentStateComponent<MainService.Storage>,
+    FileEditorManagerListener {
 
     private val MAX_ZOOM_WIDTH = 700
     private val MIN_ZOOM_WIDTH = 200
@@ -48,6 +45,15 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override var panel: PaparazziWindowPanel? = null
     override val model: DefaultListModel<Item> = DefaultListModel()
+
+    init {
+        project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, this)
+    }
+
+    override fun selectionChanged(event: FileEditorManagerEvent) {
+        super.selectionChanged(event)
+        println("File being viewed - ${event.newFile.nameWithoutExtension}")
+    }
 
     override fun image(item: Item): Image {
         val file = item.file
