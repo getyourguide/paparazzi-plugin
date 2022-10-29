@@ -39,7 +39,9 @@
         <action id="com.madrapps.paparazzi.actions.AutoChangeAction" icon="AllIcons.General.AutoscrollToSource"
                 text="Show Screenshots for Current File"
                 class="com.madrapps.paparazzi.actions.AutoChangeAction"/>
-
+        <action class="com.madrapps.paparazzi.actions.ShowErrorsAction"
+                id="com.madrapps.paparazzi.actions.ShowErrorsAction"
+                text="Show Failed Diffs" icon="AllIcons.RunConfigurations.ShowIgnored"/>
         <action class="com.madrapps.paparazzi.actions.ZoomInAction"
                 id="com.madrapps.paparazzi.actions.ZoomInAction"
                 icon="AllIcons.Graph.ZoomIn"

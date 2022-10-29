@@ -8,11 +8,13 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiManager
 import com.madrapps.paparazzi.Item
 import com.madrapps.paparazzi.PaparazziWindowPanel
+import org.jetbrains.kotlin.idea.kdoc.each
 import org.jetbrains.kotlin.idea.util.projectStructure.getModule
 import java.awt.Image
 import javax.imageio.ImageIO
@@ -26,11 +28,14 @@ interface MainService {
         // no of screenshots to show at a time (everything at once can cause OOM)
 
         var isAutoChangeEnabled = true
+        var isFitToWindow = true
     }
 
     var panel: PaparazziWindowPanel?
     val model: DefaultListModel<Item>
     val settings: Storage
+
+    var onlyShowFailures: Boolean
 
     fun image(item: Item): Image
 
@@ -54,6 +59,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override var panel: PaparazziWindowPanel? = null
     override val model: DefaultListModel<Item> = DefaultListModel()
+    override var onlyShowFailures: Boolean = false
 
     init {
         project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, this)
@@ -62,7 +68,11 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override fun selectionChanged(event: FileEditorManagerEvent) {
         super.selectionChanged(event)
         if (project.service.settings.isAutoChangeEnabled) {
-            event.newFile?.let { project.service.reload(it) }
+            event.newFile?.let {
+                if (it.extension == "kt" || it.extension == "java") {
+                    project.service.reload(it)
+                }
+            }
         }
     }
 
@@ -92,6 +102,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override fun zoomFitToWindow() {
         screenshotMap.clear()
         panel?.let {
+            settings.isFitToWindow = true
             val tmp = it.width - 32
             width = if (tmp > MAX_ZOOM_WIDTH) {
                 MAX_ZOOM_WIDTH
@@ -106,6 +117,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun zoomActualSize() {
         screenshotMap.clear()
+        settings.isFitToWindow = false
         width = 0
         reload()
     }
@@ -123,32 +135,46 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         SwingUtilities.invokeLater {
             screenshotMap.clear() // FIXME enable LRU cache
 
-            val nameWithoutExtension = file.nameWithoutExtension
-            println(nameWithoutExtension)
+            if (settings.isFitToWindow) {
+                width = panel?.width ?: 0
+            }
 
             val psiFile = PsiManager.getInstance(project).findFile(file) as? PsiClassOwner
             if (psiFile != null) {
                 model.clear()
 
-                val images = file.getModule(project)?.rootManager?.contentRoots?.find {
-                    it.name == "test"
-                }?.findChild("snapshots")?.findChild("images")?.children ?: emptyArray()
+                if (onlyShowFailures) {
+                    val projectPath = project.basePath
+                    if (projectPath != null) {
+                        val snapshots = LocalFileSystem.getInstance().findFileByPath(projectPath)?.children?.flatMap {
+                            it.findChild("out")?.findChild("failures")?.children?.toList() ?: emptyList()
+                        } ?: emptyList()
 
-                val packageName = psiFile.packageName
-                psiFile.classes.forEach { psiClass ->
-                    println("XXDD - packageName = $packageName")
-                    println("XXDD - name = ${psiClass.name}")
-
-                    val name = "${packageName}_${psiClass.name}"
-                    val filter = images.filter {
-                        it.name.startsWith(name)
+                        val packageName = psiFile.packageName
+                        psiFile.classes.forEach { psiClass ->
+                            val name = "delta-${packageName}_${psiClass.name}"
+                            snapshots.filter {
+                                it.name.startsWith(name)
+                            }.forEach {
+                                model.addElement(Item(it, name))
+                            }
+                        }
                     }
+                } else {
+                    val snapshots = file.getModule(project)?.rootManager?.contentRoots?.find {
+                        it.name == "test"
+                    }?.findChild("snapshots")?.findChild("images")?.children ?: emptyArray()
 
-                    filter.forEach {
-                        model.addElement(Item(it, name))
+                    val packageName = psiFile.packageName
+                    psiFile.classes.forEach { psiClass ->
+                        val name = "${packageName}_${psiClass.name}"
+                        snapshots.filter {
+                            it.name.startsWith(name)
+                        }.forEach {
+                            model.addElement(Item(it, name))
+                        }
                     }
                 }
-
             }
         }
     }
@@ -163,6 +189,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override val settings: MainService.Storage
         get() = state
+
 }
 
 val Project.service: MainService
