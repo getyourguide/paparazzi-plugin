@@ -136,7 +136,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
             screenshotMap.clear() // FIXME enable LRU cache
 
             if (settings.isFitToWindow) {
-                width = panel?.width ?: 0
+                width = panel?.width?.minus(32) ?: 0
             }
 
             val psiFile = PsiManager.getInstance(project).findFile(file) as? PsiClassOwner
