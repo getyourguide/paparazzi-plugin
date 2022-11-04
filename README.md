@@ -1,6 +1,9 @@
 # <img src="/preview/logo.png" title="logo" height="80" width="80" /> Paparazzi Plugin
 
-IntelliJ iDEA plugin for Android projects using the <a href="https://github.com/cashapp/paparazzi">Paparazzi</a> library
+IntelliJ iDEA / Android Studio plugin for Android projects using the <a href="https://github.com/cashapp/paparazzi">
+Paparazzi</a> library
+
+<img src="/preview/screenshare.gif" alt="preview" title="preview"/>
 
 Install
 -----
