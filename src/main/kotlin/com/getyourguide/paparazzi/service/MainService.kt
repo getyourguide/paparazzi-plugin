@@ -1,5 +1,7 @@
-package com.madrapps.paparazzi.service
+package com.getyourguide.paparazzi.service
 
+import com.getyourguide.paparazzi.Item
+import com.getyourguide.paparazzi.PaparazziWindowPanel
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -12,9 +14,6 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiManager
-import com.madrapps.paparazzi.Item
-import com.madrapps.paparazzi.PaparazziWindowPanel
-import org.jetbrains.kotlin.idea.kdoc.each
 import org.jetbrains.kotlin.idea.util.projectStructure.getModule
 import java.awt.Image
 import javax.imageio.ImageIO
@@ -46,7 +45,7 @@ interface MainService {
     fun reload(file: VirtualFile)
 }
 
-@State(name = "com.madrapps.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
+@State(name = "com.getyourguide.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
 class MainServiceImpl(private val project: Project) : MainService, PersistentStateComponent<MainService.Storage>,
     FileEditorManagerListener {
 

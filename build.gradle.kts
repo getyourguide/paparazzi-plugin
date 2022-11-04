@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.intellij") version "1.9.0"
 }
 
-group = "com.madrapps"
+group = "com.getyourguide"
 version = "0.1"
 
 repositories {

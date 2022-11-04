@@ -3,7 +3,7 @@
 
     <name>Paparazzi</name>
 
-    <vendor email="madrasappfactory@gmail.com" url="https://github.com/Madrapps">Madrapps</vendor>
+    <vendor email="saravana.thiyagaraj@getyourguide.com" url="https://github.com/getyourguide">GetYourGuide</vendor>
 
     <description><![CDATA[
     Plugin to enable easy usage of the Paparazzi library for Android.
@@ -14,41 +14,41 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.madrapps.paparazzi.PaparazziWindow" id="Paparazzi" anchor="right"/>
-        <projectService serviceInterface="com.madrapps.paparazzi.service.MainService"
-                        serviceImplementation="com.madrapps.paparazzi.service.MainServiceImpl"/>
+        <toolWindow factoryClass="com.getyourguide.paparazzi.PaparazziWindow" id="Paparazzi" anchor="right"/>
+        <projectService serviceInterface="com.getyourguide.paparazzi.service.MainService"
+                        serviceImplementation="com.getyourguide.paparazzi.service.MainServiceImpl"/>
     </extensions>
 
     <actions>
-        <action id="com.madrapps.paparazzi.actions.RefreshAction"
-                class="com.madrapps.paparazzi.actions.RefreshAction"
+        <action id="com.getyourguide.paparazzi.actions.RefreshAction"
+                class="com.getyourguide.paparazzi.actions.RefreshAction"
                 icon="AllIcons.Actions.Refresh"
                 text="Refresh"/>
-        <action id="com.madrapps.paparazzi.actions.AutoChangeAction" icon="AllIcons.General.AutoscrollToSource"
+        <action id="com.getyourguide.paparazzi.actions.AutoChangeAction" icon="AllIcons.General.AutoscrollToSource"
                 text="Show Screenshots for Current File"
-                class="com.madrapps.paparazzi.actions.AutoChangeAction"/>
-        <action class="com.madrapps.paparazzi.actions.ShowErrorsAction"
-                id="com.madrapps.paparazzi.actions.ShowErrorsAction"
+                class="com.getyourguide.paparazzi.actions.AutoChangeAction"/>
+        <action class="com.getyourguide.paparazzi.actions.ShowErrorsAction"
+                id="com.getyourguide.paparazzi.actions.ShowErrorsAction"
                 text="Show Failed Diffs" icon="AllIcons.RunConfigurations.ShowIgnored"/>
-        <action class="com.madrapps.paparazzi.actions.ZoomInAction"
-                id="com.madrapps.paparazzi.actions.ZoomInAction"
+        <action class="com.getyourguide.paparazzi.actions.ZoomInAction"
+                id="com.getyourguide.paparazzi.actions.ZoomInAction"
                 icon="AllIcons.Graph.ZoomIn"
                 text="Zoom In"
                 use-shortcut-of="ExpandAll"/>
-        <action class="com.madrapps.paparazzi.actions.ZoomOutAction"
-                id="com.madrapps.paparazzi.actions.ZoomOutAction"
+        <action class="com.getyourguide.paparazzi.actions.ZoomOutAction"
+                id="com.getyourguide.paparazzi.actions.ZoomOutAction"
                 icon="AllIcons.Graph.ZoomOut"
                 text="Zoom Out"
                 use-shortcut-of="CollapseAll"/>
-        <action class="com.madrapps.paparazzi.actions.ActualSizeAction"
-                id="com.madrapps.paparazzi.actions.ActualSizeAction"
+        <action class="com.getyourguide.paparazzi.actions.ActualSizeAction"
+                id="com.getyourguide.paparazzi.actions.ActualSizeAction"
                 text="Actual Size"
                 icon="AllIcons.Graph.ActualZoom">
             <keyboard-shortcut first-keystroke="control DIVIDE" keymap="$default"/>
             <keyboard-shortcut first-keystroke="control SLASH" keymap="$default"/>
         </action>
-        <action class="com.madrapps.paparazzi.actions.FitZoomToWindowAction"
-                id="com.madrapps.paparazzi.actions.FitZoomToWindowAction"
+        <action class="com.getyourguide.paparazzi.actions.FitZoomToWindowAction"
+                id="com.getyourguide.paparazzi.actions.FitZoomToWindowAction"
                 text="Fit Zoom to Window"
                 icon="AllIcons.General.FitContent"/>
     </actions>

@@ -1,5 +1,7 @@
-package com.madrapps.paparazzi
+package com.getyourguide.paparazzi
 
+import com.getyourguide.paparazzi.actions.*
+import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -16,8 +18,6 @@ import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH
 import com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED
 import com.intellij.uiDesigner.core.GridLayoutManager
-import com.madrapps.paparazzi.actions.*
-import com.madrapps.paparazzi.service.service
 import java.awt.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED

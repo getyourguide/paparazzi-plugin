@@ -1,13 +1,13 @@
-package com.madrapps.paparazzi.actions
+package com.getyourguide.paparazzi.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
-import com.madrapps.paparazzi.service.service
+import com.getyourguide.paparazzi.service.service
 
 class AutoChangeAction : ToggleAction() {
 
     companion object {
-        const val ID = "com.madrapps.paparazzi.actions.AutoChangeAction"
+        const val ID = "com.getyourguide.paparazzi.actions.AutoChangeAction"
     }
 
     override fun isSelected(e: AnActionEvent): Boolean {

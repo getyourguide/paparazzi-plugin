@@ -1,14 +1,14 @@
-package com.madrapps.paparazzi.actions
+package com.getyourguide.paparazzi.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.madrapps.paparazzi.service.service
+import com.getyourguide.paparazzi.service.service
 
 
 class ShowErrorsAction : ToggleAction() {
     companion object {
-        const val ID = "com.madrapps.paparazzi.actions.ShowErrorsAction"
+        const val ID = "com.getyourguide.paparazzi.actions.ShowErrorsAction"
     }
 
     override fun isSelected(e: AnActionEvent): Boolean {

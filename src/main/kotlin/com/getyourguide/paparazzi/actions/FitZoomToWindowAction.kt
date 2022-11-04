@@ -1,24 +1,24 @@
-package com.madrapps.paparazzi.actions
+package com.getyourguide.paparazzi.actions
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.madrapps.paparazzi.service.service
+import com.getyourguide.paparazzi.service.service
 
-class ActualSizeAction : AnAction() {
+class FitZoomToWindowAction : AnAction() {
 
     companion object {
-        const val ID = "com.madrapps.paparazzi.actions.ActualSizeAction"
+        const val ID = "com.getyourguide.paparazzi.actions.FitZoomToWindowAction"
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service?.zoomActualSize()
+        e.project?.service?.zoomFitToWindow()
     }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
         val project = e.project
         if (project != null) {
-            e.presentation.isEnabled = project.service.settings.isFitToWindow
+            e.presentation.isEnabled = !project.service.settings.isFitToWindow
         }
     }
 }
