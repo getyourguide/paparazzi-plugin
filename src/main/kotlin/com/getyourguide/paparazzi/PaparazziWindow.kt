@@ -1,10 +1,9 @@
 package com.getyourguide.paparazzi
 
-import com.getyourguide.paparazzi.actions.*
 import com.getyourguide.paparazzi.service.service
+import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vfs.VirtualFile
@@ -22,6 +21,8 @@ import java.awt.*
 import javax.swing.*
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+
+private const val GROUP_TOOLBAR = "com.getyourguide.paparazzi.toolbar"
 
 class PaparazziWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -79,27 +80,8 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel()
 
     private fun initToolbar(toolbar: JPanel) {
         val manager = ActionManager.getInstance()
-        val refreshAction = manager.getAction(RefreshAction.ID)
-        val autoChangeAction = manager.getAction(AutoChangeAction.ID)
-        val showErrorsAction = manager.getAction(ShowErrorsAction.ID)
-        val zoomInAction = manager.getAction(ZoomInAction.ID)
-        val zoomOutAction = manager.getAction(ZoomOutAction.ID)
-        val actualSizeAction = manager.getAction(ActualSizeAction.ID)
-        val fitZoomToWindowAction = manager.getAction(FitZoomToWindowAction.ID)
-
-        val toolbarActionGroup = DefaultActionGroup().apply {
-            add(refreshAction)
-            add(autoChangeAction)
-            addSeparator()
-//            add(zoomInAction)
-//            add(zoomOutAction)
-            add(actualSizeAction)
-            add(fitZoomToWindowAction)
-            addSeparator()
-            add(showErrorsAction)
-        }
-
-        val actionToolbar = manager.createActionToolbar(ActionPlaces.TOOLWINDOW_TITLE, toolbarActionGroup, true)
+        val actionGroup = manager.getAction(GROUP_TOOLBAR) as ActionGroup
+        val actionToolbar = manager.createActionToolbar(ActionPlaces.TOOLWINDOW_TITLE, actionGroup, true)
         actionToolbar.targetComponent = toolbar
         toolbar.add(actionToolbar.component)
     }

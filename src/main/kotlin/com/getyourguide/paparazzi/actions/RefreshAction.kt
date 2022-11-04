@@ -7,9 +7,6 @@ import com.getyourguide.paparazzi.service.service
 
 
 class RefreshAction : AnAction() {
-    companion object {
-        const val ID = "com.getyourguide.paparazzi.actions.RefreshAction"
-    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project

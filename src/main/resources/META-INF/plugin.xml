@@ -59,5 +59,14 @@
                 id="com.getyourguide.paparazzi.actions.FitZoomToWindowAction"
                 text="Fit Zoom to Window"
                 icon="AllIcons.General.FitContent"/>
+        <group id="com.getyourguide.paparazzi.toolbar">
+            <reference id="com.getyourguide.paparazzi.actions.RefreshAction"/>
+            <reference id="com.getyourguide.paparazzi.actions.AutoChangeAction"/>
+            <separator/>
+            <reference id="com.getyourguide.paparazzi.actions.ActualSizeAction"/>
+            <reference id="com.getyourguide.paparazzi.actions.FitZoomToWindowAction"/>
+            <separator/>
+            <reference id="com.getyourguide.paparazzi.actions.ShowErrorsAction"/>
+        </group>
     </actions>
 </idea-plugin>

@@ -7,9 +7,6 @@ import com.getyourguide.paparazzi.service.service
 
 
 class ShowErrorsAction : ToggleAction() {
-    companion object {
-        const val ID = "com.getyourguide.paparazzi.actions.ShowErrorsAction"
-    }
 
     override fun isSelected(e: AnActionEvent): Boolean {
         val project = e.project ?: return false

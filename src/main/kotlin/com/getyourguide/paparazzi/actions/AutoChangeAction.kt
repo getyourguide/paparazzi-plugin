@@ -6,10 +6,6 @@ import com.getyourguide.paparazzi.service.service
 
 class AutoChangeAction : ToggleAction() {
 
-    companion object {
-        const val ID = "com.getyourguide.paparazzi.actions.AutoChangeAction"
-    }
-
     override fun isSelected(e: AnActionEvent): Boolean {
         val project = e.project ?: return false
         return project.service.settings.isAutoChangeEnabled
