@@ -6,7 +6,14 @@
     <vendor email="saravana.thiyagaraj@getyourguide.com" url="https://github.com/getyourguide">GetYourGuide</vendor>
 
     <description><![CDATA[
-    Plugin to enable easy usage of the Paparazzi library for Android.
+    <p>Support for <b>Android</b> projects using the <a href="https://github.com/cashapp/paparazzi">Paparazzi</a> library</p><br/>
+    <p>Features</p>
+        <ul>
+            <li>View previously-recorded golden snapshots for the current test file opened in the editor</li>
+            <li>View failure diffs for the current test file</li>
+            <li>Zoom options for Actual Size and Fit to Window</li>
+            <li>Fully supported for test files written in Java or Kotlin</li>
+        </ul>
   ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
