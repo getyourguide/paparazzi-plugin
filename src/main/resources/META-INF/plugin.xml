@@ -14,7 +14,8 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.getyourguide.paparazzi.PaparazziWindow" id="Paparazzi" anchor="right"/>
+        <toolWindow factoryClass="com.getyourguide.paparazzi.PaparazziWindow" id="Paparazzi" anchor="right"
+                    icon="/icons/icon.svg"/>
         <projectService serviceInterface="com.getyourguide.paparazzi.service.MainService"
                         serviceImplementation="com.getyourguide.paparazzi.service.MainServiceImpl"/>
     </extensions>
