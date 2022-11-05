@@ -19,6 +19,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.kotlin</depends>
     <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.gradle</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.getyourguide.paparazzi.PaparazziWindow" id="Paparazzi" anchor="right"

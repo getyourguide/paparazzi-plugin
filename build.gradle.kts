@@ -14,7 +14,7 @@ repositories {
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
     version.set("213.7172.25")
-    plugins.set(listOf("android", "Kotlin", "java"))
+    plugins.set(listOf("android", "Kotlin", "java", "gradle"))
 
     tasks {
         buildSearchableOptions {
