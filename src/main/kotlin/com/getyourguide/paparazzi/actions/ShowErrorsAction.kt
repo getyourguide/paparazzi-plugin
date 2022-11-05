@@ -1,10 +1,9 @@
 package com.getyourguide.paparazzi.actions
 
+import com.getyourguide.paparazzi.loadFromSelectedEditorFile
+import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.getyourguide.paparazzi.service.service
-
 
 class ShowErrorsAction : ToggleAction() {
 
@@ -17,10 +16,7 @@ class ShowErrorsAction : ToggleAction() {
         val project = e.project
         if (project != null) {
             project.service.onlyShowFailures = state
-            val file = FileEditorManager.getInstance(project)?.selectedEditor?.file
-            if (file != null) {
-                e.project?.service?.reload(file)
-            }
+            project.loadFromSelectedEditorFile()
         }
     }
 }

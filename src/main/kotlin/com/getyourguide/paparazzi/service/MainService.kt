@@ -76,22 +76,22 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override fun image(item: Item): Image {
         val file = item.file
         val image = snapshotsMap[file]
-        return if (image == null) {
-            val read = ImageIO.read(file.inputStream)
-            val im = if (width == 0) {
-                read
+        return if (image != null) {
+            image
+        } else {
+            val bufferedImage = ImageIO.read(file.inputStream)
+            val finalImage = if (width == 0) {
+                bufferedImage
             } else {
-                val width = read.width.toFloat()
-                val height = read.height.toFloat()
+                val width = bufferedImage.width.toFloat()
+                val height = bufferedImage.height.toFloat()
                 val newWidth = this.width
                 var newHeight = (height / width * newWidth).toInt()
                 if (newHeight == 0) newHeight = 20
-                read.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH)
+                bufferedImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH)
             }
-            snapshotsMap[file] = im
-            im
-        } else {
-            image
+            snapshotsMap[file] = finalImage
+            finalImage
         }
     }
 

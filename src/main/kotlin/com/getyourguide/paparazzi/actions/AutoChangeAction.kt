@@ -1,8 +1,9 @@
 package com.getyourguide.paparazzi.actions
 
+import com.getyourguide.paparazzi.loadFromSelectedEditorFile
+import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
-import com.getyourguide.paparazzi.service.service
 
 class AutoChangeAction : ToggleAction() {
 
@@ -15,6 +16,7 @@ class AutoChangeAction : ToggleAction() {
         val project = e.project
         if (project != null) {
             project.service.settings.isAutoChangeEnabled = state
+            project.loadFromSelectedEditorFile()
         }
     }
 }
