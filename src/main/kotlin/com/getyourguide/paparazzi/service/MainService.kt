@@ -25,7 +25,6 @@ interface MainService {
     class Storage {
         // path to snapshots
         // no of screenshots to show at a time (everything at once can cause OOM)
-
         var isAutoChangeEnabled = true
         var isFitToWindow = true
     }
@@ -49,7 +48,7 @@ interface MainService {
 class MainServiceImpl(private val project: Project) : MainService, PersistentStateComponent<MainService.Storage>,
     FileEditorManagerListener {
 
-    private val MAX_ZOOM_WIDTH = 700
+    private val MAX_ZOOM_WIDTH = 500
     private val MIN_ZOOM_WIDTH = 200
 
     private var storage = MainService.Storage()
@@ -128,6 +127,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         toList.forEach { item ->
             model.addElement(item)
         }
+        panel?.list?.ensureIndexIsVisible(0)
     }
 
     override fun reload(file: VirtualFile) {
@@ -174,6 +174,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                         }
                     }
                 }
+                panel?.list?.ensureIndexIsVisible(0)
             }
         }
     }
