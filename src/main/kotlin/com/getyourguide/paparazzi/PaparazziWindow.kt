@@ -1,5 +1,6 @@
 package com.getyourguide.paparazzi
 
+import com.getyourguide.paparazzi.service.HORIZONTAL_PADDING
 import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
@@ -116,7 +117,7 @@ class Renderer(private val project: Project) : ListCellRenderer<Item> {
         val panel = JPanel()
         val boxLayout = BoxLayout(panel, BoxLayout.Y_AXIS)
         panel.layout = boxLayout
-        panel.border = BorderFactory.createEmptyBorder(32, 16, 32, 16)
+        panel.border = BorderFactory.createEmptyBorder(32, HORIZONTAL_PADDING, 32, HORIZONTAL_PADDING)
 
         panel.add(title)
         panel.add(screenshot)

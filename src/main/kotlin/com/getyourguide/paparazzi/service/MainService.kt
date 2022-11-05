@@ -20,6 +20,8 @@ import javax.imageio.ImageIO
 import javax.swing.DefaultListModel
 import javax.swing.SwingUtilities
 
+const val HORIZONTAL_PADDING = 16
+
 interface MainService {
 
     class Storage {
@@ -48,11 +50,8 @@ interface MainService {
 class MainServiceImpl(private val project: Project) : MainService, PersistentStateComponent<MainService.Storage>,
     FileEditorManagerListener {
 
-    private val MAX_ZOOM_WIDTH = 500
-    private val MIN_ZOOM_WIDTH = 200
-
     private var storage = MainService.Storage()
-    private val screenshotMap: MutableMap<VirtualFile, Image> = mutableMapOf()
+    private val snapshotsMap: MutableMap<VirtualFile, Image> = mutableMapOf()
     private var width: Int = 0
 
     override var panel: PaparazziWindowPanel? = null
@@ -65,10 +64,10 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun selectionChanged(event: FileEditorManagerEvent) {
         super.selectionChanged(event)
-        if (project.service.settings.isAutoChangeEnabled) {
+        if (settings.isAutoChangeEnabled) {
             event.newFile?.let {
                 if (it.extension == "kt" || it.extension == "java") {
-                    project.service.reload(it)
+                    reload(it)
                 }
             }
         }
@@ -76,7 +75,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun image(item: Item): Image {
         val file = item.file
-        val image = screenshotMap[file]
+        val image = snapshotsMap[file]
         return if (image == null) {
             val read = ImageIO.read(file.inputStream)
             val im = if (width == 0) {
@@ -89,39 +88,31 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                 if (newHeight == 0) newHeight = 20
                 read.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH)
             }
-            screenshotMap[file] = im
+            snapshotsMap[file] = im
             im
         } else {
             image
         }
     }
 
-
     override fun zoomFitToWindow() {
-        screenshotMap.clear()
+        snapshotsMap.clear()
         panel?.let {
             settings.isFitToWindow = true
-            val tmp = it.width - 32
-            width = if (tmp > MAX_ZOOM_WIDTH) {
-                MAX_ZOOM_WIDTH
-            } else if (tmp < MIN_ZOOM_WIDTH) {
-                MIN_ZOOM_WIDTH
-            } else {
-                tmp
-            }
+            width = it.allowedWidth
             reload()
         }
     }
 
     override fun zoomActualSize() {
-        screenshotMap.clear()
+        snapshotsMap.clear()
         settings.isFitToWindow = false
         width = 0
         reload()
     }
 
     override fun reload() {
-        screenshotMap.clear() // FIXME enable LRU cache
+        snapshotsMap.clear() // FIXME enable LRU cache
         val toList = model.elements().toList()
         model.clear()
         toList.forEach { item ->
@@ -132,10 +123,10 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun reload(file: VirtualFile) {
         SwingUtilities.invokeLater {
-            screenshotMap.clear() // FIXME enable LRU cache
+            snapshotsMap.clear() // FIXME enable LRU cache
 
             if (settings.isFitToWindow) {
-                width = panel?.width?.minus(32) ?: 0
+                width = panel.allowedWidth
             }
 
             val psiFile = PsiManager.getInstance(project).findFile(file) as? PsiClassOwner
@@ -179,9 +170,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         }
     }
 
-    override fun getState(): MainService.Storage {
-        return storage
-    }
+    override fun getState(): MainService.Storage = storage
 
     override fun loadState(state: MainService.Storage) {
         storage = state
@@ -190,6 +179,13 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override val settings: MainService.Storage
         get() = state
 
+
+    private val PaparazziWindowPanel?.allowedWidth: Int
+        get() {
+            return if (this != null) {
+                (this.width - HORIZONTAL_PADDING * 2).coerceIn(200, 500)
+            } else 0
+        }
 }
 
 val Project.service: MainService
