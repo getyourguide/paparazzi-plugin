@@ -2,23 +2,26 @@ package com.getyourguide.paparazzi.service
 
 import com.getyourguide.paparazzi.Item
 import com.getyourguide.paparazzi.PaparazziWindowPanel
+import com.getyourguide.paparazzi.toItems
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.NonBlockingReadAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
+import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.rootManager
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiClassOwner
-import com.intellij.psi.PsiManager
-import org.jetbrains.kotlin.idea.util.projectStructure.getModule
+import com.intellij.util.concurrency.AppExecutorUtil
+import org.jetbrains.concurrency.CancellablePromise
 import java.awt.Image
+import java.util.concurrent.Callable
 import javax.imageio.ImageIO
 import javax.swing.DefaultListModel
-import javax.swing.SwingUtilities
 
 const val HORIZONTAL_PADDING = 16
 
@@ -37,7 +40,7 @@ interface MainService {
 
     var onlyShowFailures: Boolean
 
-    fun image(item: Item): Image
+    fun image(item: Item): Image?
 
     fun zoomFitToWindow()
     fun zoomActualSize()
@@ -58,6 +61,8 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override val model: DefaultListModel<Item> = DefaultListModel()
     override var onlyShowFailures: Boolean = false
 
+    private var reloadJob: CancellablePromise<List<Item>>? = null
+
     init {
         project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, this)
     }
@@ -73,30 +78,35 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         }
     }
 
-    override fun image(item: Item): Image {
+    override fun image(item: Item): Image? {
+        return snapshotsMap[item.file]
+    }
+
+    private fun cacheImage(item: Item): Image? {
         val file = item.file
-        val image = snapshotsMap[file]
-        return if (image != null) {
-            image
-        } else {
-            val bufferedImage = ImageIO.read(file.inputStream)
-            val finalImage = if (width == 0) {
-                bufferedImage
-            } else {
-                val width = bufferedImage.width.toFloat()
-                val height = bufferedImage.height.toFloat()
-                val newWidth = this.width
-                var newHeight = (height / width * newWidth).toInt()
-                if (newHeight == 0) newHeight = 20
-                bufferedImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH)
+        return snapshotsMap[file] ?: try {
+            file.inputStream.use {
+                val bufferedImage = ImageIO.read(it)
+                val finalImage = if (width == 0) {
+                    bufferedImage
+                } else {
+                    val width = bufferedImage.width.toFloat()
+                    val height = bufferedImage.height.toFloat()
+                    val newWidth = this.width
+                    var newHeight = (height / width * newWidth).toInt()
+                    if (newHeight == 0) newHeight = 20
+                    bufferedImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH)
+                }
+                snapshotsMap[file] = finalImage
+                finalImage
             }
-            snapshotsMap[file] = finalImage
-            finalImage
+        } catch (e: Exception) {
+            // Log the exception to the notification channel
+            null
         }
     }
 
     override fun zoomFitToWindow() {
-        snapshotsMap.clear()
         panel?.let {
             settings.isFitToWindow = true
             width = it.allowedWidth
@@ -105,7 +115,6 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     }
 
     override fun zoomActualSize() {
-        snapshotsMap.clear()
         settings.isFitToWindow = false
         width = 0
         reload()
@@ -122,52 +131,30 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     }
 
     override fun reload(file: VirtualFile) {
-        SwingUtilities.invokeLater {
-            snapshotsMap.clear() // FIXME enable LRU cache
-
-            if (settings.isFitToWindow) {
-                width = panel.allowedWidth
-            }
-
-            val psiFile = PsiManager.getInstance(project).findFile(file) as? PsiClassOwner
-            if (psiFile != null) {
-                model.clear()
-
-                if (onlyShowFailures) {
-                    val projectPath = project.basePath
-                    if (projectPath != null) {
-                        val snapshots = LocalFileSystem.getInstance().findFileByPath(projectPath)?.children?.flatMap {
-                            it.findChild("out")?.findChild("failures")?.children?.toList() ?: emptyList()
-                        } ?: emptyList()
-
-                        val packageName = psiFile.packageName
-                        psiFile.classes.forEach { psiClass ->
-                            val name = "delta-${packageName}_${psiClass.name}"
-                            snapshots.filter {
-                                it.name.startsWith(name)
-                            }.forEach {
-                                model.addElement(Item(it, name))
-                            }
-                        }
-                    }
-                } else {
-                    val snapshots = file.getModule(project)?.rootManager?.contentRoots?.find {
-                        it.name == "test"
-                    }?.findChild("snapshots")?.findChild("images")?.children ?: emptyArray()
-
-                    val packageName = psiFile.packageName
-                    psiFile.classes.forEach { psiClass ->
-                        val name = "${packageName}_${psiClass.name}"
-                        snapshots.filter {
-                            it.name.startsWith(name)
-                        }.forEach {
-                            model.addElement(Item(it, name))
-                        }
-                    }
-                }
-                panel?.list?.ensureIndexIsVisible(0)
-            }
+        reloadJob?.cancel()
+        if (settings.isFitToWindow) {
+            width = panel.allowedWidth
         }
+
+        val nonBlocking: NonBlockingReadAction<List<Item>> = ReadAction.nonBlocking(Callable {
+            try {
+                model.clear()
+                snapshotsMap.clear() // FIXME enable LRU cache
+
+                file.toItems(project, onlyShowFailures).map { item ->
+                    ProgressManager.checkCanceled()
+                    cacheImage(item)
+                    item
+                }
+            } catch (e: ProcessCanceledException) {
+                emptyList()
+            }
+        })
+        reloadJob = nonBlocking.finishOnUiThread(ModalityState.defaultModalityState()) {
+            model.clear()
+            model.addAll(it)
+            panel?.list?.ensureIndexIsVisible(0)
+        }.submit(AppExecutorUtil.getAppExecutorService())
     }
 
     override fun getState(): MainService.Storage = storage
@@ -178,7 +165,6 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override val settings: MainService.Storage
         get() = state
-
 
     private val PaparazziWindowPanel?.allowedWidth: Int
         get() {
