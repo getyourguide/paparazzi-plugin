@@ -33,7 +33,7 @@
                 class="com.getyourguide.paparazzi.actions.RefreshAction"
                 icon="AllIcons.Actions.Refresh"
                 text="Refresh"/>
-        <action id="com.getyourguide.paparazzi.actions.AutoChangeAction" icon="AllIcons.General.AutoscrollToSource"
+        <action id="com.getyourguide.paparazzi.actions.AutoChangeAction" icon="/icons/class.svg"
                 text="Show Screenshots for Current File"
                 class="com.getyourguide.paparazzi.actions.AutoChangeAction"/>
         <action class="com.getyourguide.paparazzi.actions.ShowErrorsAction"
