@@ -20,6 +20,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.jetbrains.concurrency.CancellablePromise
 import java.awt.Image
+import java.lang.ref.SoftReference
 import java.util.concurrent.Callable
 import javax.imageio.ImageIO
 import javax.swing.DefaultListModel
@@ -55,7 +56,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     FileEditorManagerListener {
 
     private var storage = MainService.Storage()
-    private val snapshotsMap: MutableMap<VirtualFile, Image> = mutableMapOf()
+    private val cache = SoftReference(SnapshotCache())
     private var width: Int = 0
 
     override var panel: PaparazziWindowPanel? = null
@@ -79,13 +80,11 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         }
     }
 
-    override fun image(item: Item): Image? {
-        return snapshotsMap[item.file]
-    }
+    override fun image(item: Item): Image? = cacheImage(item)
 
     private fun cacheImage(item: Item): Image? {
         val file = item.file
-        return snapshotsMap[file] ?: try {
+        return cache.get()?.get(file) ?: try {
             file.inputStream.use {
                 val bufferedImage = ImageIO.read(it)
                 val finalImage = if (width == 0) {
@@ -98,7 +97,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                     if (newHeight == 0) newHeight = 20
                     bufferedImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH)
                 }
-                snapshotsMap[file] = finalImage
+                cache.get()?.set(file, finalImage)
                 finalImage
             }
         } catch (e: Exception) {
@@ -122,7 +121,6 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     }
 
     override fun reload() {
-        snapshotsMap.clear() // FIXME enable LRU cache
         val toList = model.elements().toList()
         model.clear()
         toList.forEach { item ->
@@ -140,8 +138,6 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         val nonBlocking: NonBlockingReadAction<List<Item>> = ReadAction.nonBlocking(Callable {
             try {
                 model.clear()
-                snapshotsMap.clear() // FIXME enable LRU cache
-
                 file.toItems(project, onlyShowFailures).map { item ->
                     ProgressManager.checkCanceled()
                     cacheImage(item)
