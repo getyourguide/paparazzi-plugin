@@ -2,6 +2,7 @@ package com.getyourguide.paparazzi.service
 
 import com.getyourguide.paparazzi.Item
 import com.getyourguide.paparazzi.PaparazziWindowPanel
+import com.getyourguide.paparazzi.isToolWindowOpened
 import com.getyourguide.paparazzi.toItems
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.NonBlockingReadAction
@@ -69,7 +70,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun selectionChanged(event: FileEditorManagerEvent) {
         super.selectionChanged(event)
-        if (settings.isAutoChangeEnabled) {
+        if (settings.isAutoChangeEnabled && project.isToolWindowOpened()) {
             event.newFile?.let {
                 if (it.extension == "kt" || it.extension == "java") {
                     reload(it)

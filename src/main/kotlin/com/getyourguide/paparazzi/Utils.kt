@@ -7,6 +7,7 @@ import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.idea.util.projectStructure.getModule
@@ -80,4 +81,8 @@ internal fun VirtualFile.toItems(project: Project, isFailure: Boolean): List<Ite
         val snapshots = if (isFailure) project.failureDiffSnapshots(this) else project.recordedSnapshots(this)
         psiFile.toItems(snapshots, isFailure)
     } else emptyList()
+}
+
+internal fun Project.isToolWindowOpened(): Boolean {
+    return ToolWindowManager.getInstance(this).getToolWindow(TOOL_WINDOW_ID)?.isVisible == true
 }

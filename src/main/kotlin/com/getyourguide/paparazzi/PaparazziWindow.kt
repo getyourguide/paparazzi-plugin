@@ -24,6 +24,7 @@ import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
 private const val GROUP_TOOLBAR = "com.getyourguide.paparazzi.toolbar"
+const val TOOL_WINDOW_ID = "Paparazzi"
 
 class PaparazziWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
