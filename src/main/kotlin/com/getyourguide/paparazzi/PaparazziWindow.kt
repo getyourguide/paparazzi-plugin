@@ -1,13 +1,13 @@
 package com.getyourguide.paparazzi
 
 import com.getyourguide.paparazzi.service.HORIZONTAL_PADDING
+import com.getyourguide.paparazzi.service.Snapshot
 import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBList
@@ -18,8 +18,18 @@ import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH
 import com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED
 import com.intellij.uiDesigner.core.GridLayoutManager
-import java.awt.*
-import javax.swing.*
+import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Component
+import java.awt.Insets
+import java.awt.Rectangle
+import javax.swing.BorderFactory
+import javax.swing.BoxLayout
+import javax.swing.ImageIcon
+import javax.swing.JLabel
+import javax.swing.JList
+import javax.swing.JPanel
+import javax.swing.ListCellRenderer
 import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
@@ -35,7 +45,7 @@ class PaparazziWindow : ToolWindowFactory {
 class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel() {
 
     private val model = project.service.model
-    override val list = object : JBList<Item>(model) {
+    override val list = object : JBList<Snapshot>(model) {
         override fun getScrollableUnitIncrement(visibleRect: Rectangle?, orientation: Int, direction: Int): Int {
             return 30
         }
@@ -91,21 +101,19 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel()
 
 abstract class PaparazziWindowPanel : SimpleToolWindowPanel(true, true) {
 
-    abstract val list: JBList<Item>
+    abstract val list: JBList<Snapshot>
 }
 
-data class Item(val file: VirtualFile, val snapshotName: String)
-
-class Renderer(private val project: Project) : ListCellRenderer<Item> {
+class Renderer(private val project: Project) : ListCellRenderer<Snapshot> {
     override fun getListCellRendererComponent(
-        list: JList<out Item>?,
-        value: Item,
+        list: JList<out Snapshot>?,
+        value: Snapshot,
         index: Int,
         isSelected: Boolean,
         cellHasFocus: Boolean
     ): Component {
         val image = project.service.image(value)
-        val title = JLabel(value.snapshotName).apply {
+        val title = JLabel(value.name).apply {
             border = BorderFactory.createEmptyBorder(0, 0, 8, 0)
         }
         val snapshot = if (image != null) {

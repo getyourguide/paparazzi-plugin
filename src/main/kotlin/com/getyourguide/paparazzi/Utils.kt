@@ -1,10 +1,9 @@
 package com.getyourguide.paparazzi
 
+import com.getyourguide.paparazzi.service.Snapshot
 import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.CaretModel
-import com.intellij.openapi.editor.event.CaretEvent
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
@@ -44,11 +43,11 @@ internal fun Project.runRecordPaparazzi(modulePath: String) {
     GradleExecuteTaskAction.runGradle(this, null, modulePath, "recordPaparazziDebug")
 }
 
-internal fun VirtualFile.toItems(project: Project, isFailure: Boolean): List<Item> {
+internal fun VirtualFile.toSnapshots(project: Project, isFailure: Boolean): List<Snapshot> {
     val psiFile = PsiManager.getInstance(project).findFile(this) as? PsiClassOwner
     return if (psiFile != null) {
         val snapshots = if (isFailure) project.failureDiffSnapshots(this) else project.recordedSnapshots(this)
-        psiFile.toItems(snapshots, isFailure)
+        psiFile.toSnapshots(snapshots, isFailure)
     } else emptyList()
 }
 
@@ -63,39 +62,35 @@ internal fun PsiElement.containingMethod(): UMethod? {
 internal val FileEditor.caretModel: CaretModel?
     get() = (this as? TextEditor)?.editor?.caretModel
 
-internal fun CaretModel.psiElement(project: Project, file: VirtualFile): PsiElement? {
-    return file.psiElement(project, offset)
-}
-
-internal fun CaretEvent.psiElement(project: Project): PsiElement? {
-    val offset = caret?.offset
-    if (offset != null) {
-        val file = FileDocumentManager.getInstance().getFile(editor.document)
-        if (file != null) {
-            return file.psiElement(project, offset)
-        }
-    }
-    return null
-}
-
 internal fun <T> nonBlocking(block: () -> T): CancellablePromise<T> {
     return ReadAction.nonBlocking(Callable {
         block()
     }).submit(AppExecutorUtil.getAppExecutorService())
 }
 
-private fun VirtualFile.psiElement(project: Project, offset: Int): PsiElement? {
+fun VirtualFile.psiElement(project: Project, offset: Int): PsiElement? {
     val psiFile = PsiManager.getInstance(project).findFile(this)
     return psiFile?.findElementAt(offset)
 }
 
-private fun PsiClassOwner.toItems(snapshots: List<VirtualFile>, isFailure: Boolean): List<Item> {
+private fun PsiClassOwner.toSnapshots(snapshots: List<VirtualFile>, isFailure: Boolean): List<Snapshot> {
     val prefix = if (isFailure) "delta-" else ""
     return classes.flatMap { psiClass ->
         val name = "$prefix${packageName}_${psiClass.name}"
         snapshots.filter { it.name.startsWith(name) }.map {
-            Item(it, it.snapshotName(name))
+            Snapshot(it, it.snapshotName(name))
         }
+    }
+}
+
+internal fun VirtualFile.methods(project: Project): List<String> {
+    val psiClassOwner = PsiManager.getInstance(project).findFile(this) as? PsiClassOwner
+    return psiClassOwner?.methods() ?: emptyList()
+}
+
+private fun PsiClassOwner.methods(): List<String> {
+    return classes.flatMap { psiClass ->
+        psiClass.methods.map { it.name }
     }
 }
 

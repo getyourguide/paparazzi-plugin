@@ -1,13 +1,11 @@
 package com.getyourguide.paparazzi.service
 
-import com.getyourguide.paparazzi.Item
 import com.getyourguide.paparazzi.PaparazziWindowPanel
 import com.getyourguide.paparazzi.caretModel
 import com.getyourguide.paparazzi.containingMethod
 import com.getyourguide.paparazzi.isToolWindowOpened
 import com.getyourguide.paparazzi.nonBlocking
 import com.getyourguide.paparazzi.psiElement
-import com.getyourguide.paparazzi.toItems
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.NonBlockingReadAction
 import com.intellij.openapi.application.ReadAction
@@ -17,6 +15,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.progress.ProcessCanceledException
@@ -52,17 +51,17 @@ interface MainService {
     }
 
     var panel: PaparazziWindowPanel?
-    val model: DefaultListModel<Item>
+    val model: DefaultListModel<Snapshot>
     val settings: Storage
 
     var onlyShowFailures: Boolean
 
-    fun image(item: Item): Image?
+    fun image(snapshot: Snapshot): Image?
 
     fun zoomFitToWindow()
     fun zoomActualSize()
 
-    fun reload(file: VirtualFile)
+    fun reload(file: VirtualFile?, methodName: String? = null)
 }
 
 @State(name = "com.getyourguide.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
@@ -74,10 +73,10 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     private var width: Int = 0
 
     override var panel: PaparazziWindowPanel? = null
-    override val model: DefaultListModel<Item> = DefaultListModel()
+    override val model: DefaultListModel<Snapshot> = DefaultListModel()
     override var onlyShowFailures: Boolean = false
 
-    private var reloadJob: CancellablePromise<List<Item>>? = null
+    private var reloadJob: CancellablePromise<List<Snapshot>>? = null
 
     init {
         project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, this)
@@ -101,10 +100,12 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                     val caretModel = event.newEditor.caretModel
                     if (caretModel != null) {
                         nonBlocking {
-                            val element = caretModel.psiElement(project, file)
-                            if (element != null) {
-                                val containingUMethod = element.containingMethod()
-                                println("Method = ${containingUMethod?.name}")
+                            val element = file.psiElement(project, caretModel.offset)
+                            val containingUMethod = element?.containingMethod()
+                            if (containingUMethod != null) {
+                                reload(file, containingUMethod.name)
+                            } else {
+                                reload(null)
                             }
                         }
                         caretModel.addCaretListener(caretListener, event.newEditor)
@@ -117,19 +118,25 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     private class CaretModelListener(private val project: Project) : CaretListener {
         override fun caretPositionChanged(event: CaretEvent) {
             nonBlocking {
-                val element = event.psiElement(project)
-                if (element != null) {
-                    val containingUMethod = element.containingMethod()
-                    println("Method listener = ${containingUMethod?.name}")
+                val file = FileDocumentManager.getInstance().getFile(event.editor.document)
+                val offset = event.caret?.offset
+                if (file != null && offset != null) {
+                    val element = file.psiElement(project, offset)
+                    val containingUMethod = element?.containingMethod()
+                    if (containingUMethod != null) {
+                        project.service.reload(file, containingUMethod.name)
+                    } else {
+                        project.service.reload(null)
+                    }
                 }
             }
         }
     }
 
-    override fun image(item: Item): Image? = cacheImage(item)
+    override fun image(snapshot: Snapshot): Image? = cacheImage(snapshot)
 
-    private fun cacheImage(item: Item): Image? {
-        val file = item.file
+    private fun cacheImage(snapshot: Snapshot): Image? {
+        val file = snapshot.file
         return cache.get()?.get(file) ?: try {
             file.inputStream.use {
                 val bufferedImage = ImageIO.read(it)
@@ -175,16 +182,26 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         panel?.list?.ensureIndexIsVisible(0)
     }
 
-    override fun reload(file: VirtualFile) {
+    override fun reload(file: VirtualFile?, methodName: String?) {
         reloadJob?.cancel()
         if (settings.isFitToWindow) {
             width = panel.allowedWidth
         }
 
-        val nonBlocking: NonBlockingReadAction<List<Item>> = ReadAction.nonBlocking(Callable {
+        if (file == null) {
+            model.clear()
+            return
+        }
+        val nonBlocking: NonBlockingReadAction<List<Snapshot>> = ReadAction.nonBlocking(Callable {
             try {
                 model.clear()
-                file.toItems(project, onlyShowFailures).map { item ->
+                val fileInfo = file.toFileInfo(project, onlyShowFailures)
+                val snapshots = if (methodName != null) {
+                    fileInfo.snapshotsForMethod(methodName)
+                } else {
+                    fileInfo.allSnapshots()
+                }
+                snapshots.map { item ->
                     ProgressManager.checkCanceled()
                     cacheImage(item)
                     item
