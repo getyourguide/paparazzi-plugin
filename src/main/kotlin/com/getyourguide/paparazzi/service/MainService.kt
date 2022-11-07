@@ -13,6 +13,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
+import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
@@ -32,7 +33,16 @@ interface MainService {
     class Storage {
         // path to snapshots
         // no of snapshots to show at a time (everything at once can cause OOM)
-        var isAutoChangeEnabled = true
+        var isAutoLoadFileEnabled = true
+            set(value) {
+                field = value
+                if (value) isAutoLoadMethodEnabled = false
+            }
+        var isAutoLoadMethodEnabled = false
+            set(value) {
+                field = value
+                if (value) isAutoLoadFileEnabled = false
+            }
         var isFitToWindow = true
     }
 
@@ -47,7 +57,6 @@ interface MainService {
     fun zoomFitToWindow()
     fun zoomActualSize()
 
-    fun reload()
     fun reload(file: VirtualFile)
 }
 
@@ -71,10 +80,16 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun selectionChanged(event: FileEditorManagerEvent) {
         super.selectionChanged(event)
-        if (settings.isAutoChangeEnabled && project.isToolWindowOpened()) {
-            event.newFile?.let {
-                if (it.extension == "kt" || it.extension == "java") {
-                    reload(it)
+        if (project.isToolWindowOpened()) {
+            val file = event.newFile
+            if (file != null && (file.extension == "kt" || file.extension == "java")) {
+                if (settings.isAutoLoadFileEnabled) {
+                    reload(file)
+                } else if (settings.isAutoLoadMethodEnabled) {
+                    val caret = (event.newEditor as? TextEditor)?.editor?.caretModel
+                    if (caret != null) {
+                        val offset = caret.offset
+                    }
                 }
             }
         }
@@ -120,7 +135,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         reload()
     }
 
-    override fun reload() {
+    private fun reload() {
         val toList = model.elements().toList()
         model.clear()
         toList.forEach { item ->
