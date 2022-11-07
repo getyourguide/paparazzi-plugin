@@ -73,6 +73,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override val model: DefaultListModel<Snapshot> = DefaultListModel()
     override var onlyShowFailures: Boolean = false
     private val caretListener = CaretModelListener(project)
+    private var previouslyLoaded = PreviouslyLoaded()
 
     private var reloadJob: CancellablePromise<List<Snapshot>>? = null
 
@@ -149,6 +150,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         nonBlocking {
             val editor = FileEditorManager.getInstance(project)?.selectedEditor
             val file = editor?.file
+            previouslyLoaded = PreviouslyLoaded()
             if (settings.isAutoLoadMethodEnabled) {
                 val offset = editor?.caretModel?.offset
                 if (file != null && offset != null) {
@@ -175,6 +177,9 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
         if (file == null) {
             model.clear()
+            previouslyLoaded = PreviouslyLoaded()
+            return
+        } else if (previouslyLoaded.check(file, methodName)) {
             return
         }
         val nonBlocking: NonBlockingReadAction<List<Snapshot>> = ReadAction.nonBlocking(Callable {
@@ -198,6 +203,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         reloadJob = nonBlocking.finishOnUiThread(ModalityState.defaultModalityState()) {
             model.clear()
             model.addAll(it)
+            previouslyLoaded = PreviouslyLoaded(file, methodName)
             panel?.list?.ensureIndexIsVisible(0)
         }.submit(AppExecutorUtil.getAppExecutorService())
     }

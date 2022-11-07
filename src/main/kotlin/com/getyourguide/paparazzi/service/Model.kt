@@ -24,6 +24,15 @@ data class FileInfo(val items: List<MethodInfo>) {
     fun allSnapshots(): List<Snapshot> = items.flatMap { it.snapshots }
 }
 
+data class PreviouslyLoaded(val file: VirtualFile? = null, val methodName: String? = null) {
+    fun check(newFile: VirtualFile?, newMethodName: String?): Boolean {
+        if (newFile != null && newMethodName != null) {
+            return newFile.name == file?.name && newMethodName == methodName
+        }
+        return false
+    }
+}
+
 internal fun VirtualFile.toFileInfo(project: Project, isFailure: Boolean): FileInfo {
     val snapshots = toSnapshots(project, isFailure).toMutableList()
     val methods = methods(project).sortedByDescending { it.length }
