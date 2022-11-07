@@ -31,18 +31,39 @@ internal fun Project.runRecordPaparazzi(modulePath: String) {
     GradleExecuteTaskAction.runGradle(this, null, modulePath, "recordPaparazziDebug")
 }
 
-internal fun Project.modulePath(file: VirtualFile): String? {
-    basePath?.let { projectPath ->
-        val relativePath = FileUtil.getRelativePath(projectPath, file.path, File.separatorChar)
-        val moduleName = relativePath?.split(File.separator)?.firstOrNull()
-        if (moduleName != null) {
-            return projectPath + File.separator + moduleName
-        }
-    }
-    return null
+internal fun VirtualFile.toItems(project: Project, isFailure: Boolean): List<Item> {
+    val psiFile = PsiManager.getInstance(project).findFile(this) as? PsiClassOwner
+    return if (psiFile != null) {
+        val snapshots = if (isFailure) project.failureDiffSnapshots(this) else project.recordedSnapshots(this)
+        psiFile.toItems(snapshots, isFailure)
+    } else emptyList()
 }
 
-internal fun Project.failureDiffSnapshots(file: VirtualFile): List<VirtualFile> {
+internal fun Project.isToolWindowOpened(): Boolean {
+    return ToolWindowManager.getInstance(this).getToolWindow(TOOL_WINDOW_ID)?.isVisible == true
+}
+
+private fun PsiClassOwner.toItems(snapshots: List<VirtualFile>, isFailure: Boolean): List<Item> {
+    val prefix = if (isFailure) "delta-" else ""
+    return classes.flatMap { psiClass ->
+        val name = "$prefix${packageName}_${psiClass.name}"
+        snapshots.filter { it.name.startsWith(name) }.map {
+            Item(it, it.snapshotName(name))
+        }
+    }
+}
+
+private fun VirtualFile.snapshotName(qualifiedTestName: String): String {
+    return nameWithoutExtension.substringAfter(qualifiedTestName + "_")
+}
+
+private fun Project.recordedSnapshots(file: VirtualFile): List<VirtualFile> {
+    return file.getModule(this)?.rootManager?.contentRoots?.find {
+        it.name == "test"
+    }?.findChild("snapshots")?.findChild("images")?.children?.toList() ?: emptyList()
+}
+
+private fun Project.failureDiffSnapshots(file: VirtualFile): List<VirtualFile> {
     val modulePath = modulePath(file)
     val projectPath = basePath
     return if (modulePath != null) {
@@ -55,34 +76,13 @@ internal fun Project.failureDiffSnapshots(file: VirtualFile): List<VirtualFile> 
     } else emptyList()
 }
 
-internal fun Project.recordedSnapshots(file: VirtualFile): List<VirtualFile> {
-    return file.getModule(this)?.rootManager?.contentRoots?.find {
-        it.name == "test"
-    }?.findChild("snapshots")?.findChild("images")?.children?.toList() ?: emptyList()
-}
-
-internal fun VirtualFile.screenshotName(qualifiedTestName: String): String {
-    return nameWithoutExtension.substringAfter(qualifiedTestName + "_")
-}
-
-internal fun PsiClassOwner.toItems(snapshots: List<VirtualFile>, isFailure: Boolean): List<Item> {
-    val prefix = if (isFailure) "delta-" else ""
-    return classes.flatMap { psiClass ->
-        val name = "$prefix${packageName}_${psiClass.name}"
-        snapshots.filter { it.name.startsWith(name) }.map {
-            Item(it, it.screenshotName(name))
+private fun Project.modulePath(file: VirtualFile): String? {
+    basePath?.let { projectPath ->
+        val relativePath = FileUtil.getRelativePath(projectPath, file.path, File.separatorChar)
+        val moduleName = relativePath?.split(File.separator)?.firstOrNull()
+        if (moduleName != null) {
+            return projectPath + File.separator + moduleName
         }
     }
-}
-
-internal fun VirtualFile.toItems(project: Project, isFailure: Boolean): List<Item> {
-    val psiFile = PsiManager.getInstance(project).findFile(this) as? PsiClassOwner
-    return if (psiFile != null) {
-        val snapshots = if (isFailure) project.failureDiffSnapshots(this) else project.recordedSnapshots(this)
-        psiFile.toItems(snapshots, isFailure)
-    } else emptyList()
-}
-
-internal fun Project.isToolWindowOpened(): Boolean {
-    return ToolWindowManager.getInstance(this).getToolWindow(TOOL_WINDOW_ID)?.isVisible == true
+    return null
 }

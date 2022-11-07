@@ -94,7 +94,7 @@ abstract class PaparazziWindowPanel : SimpleToolWindowPanel(true, true) {
     abstract val list: JBList<Item>
 }
 
-data class Item(val file: VirtualFile, val screenshotName: String)
+data class Item(val file: VirtualFile, val snapshotName: String)
 
 class Renderer(private val project: Project) : ListCellRenderer<Item> {
     override fun getListCellRendererComponent(
@@ -105,10 +105,10 @@ class Renderer(private val project: Project) : ListCellRenderer<Item> {
         cellHasFocus: Boolean
     ): Component {
         val image = project.service.image(value)
-        val title = JLabel(value.screenshotName).apply {
+        val title = JLabel(value.snapshotName).apply {
             border = BorderFactory.createEmptyBorder(0, 0, 8, 0)
         }
-        val screenshot = if (image != null) {
+        val snapshot = if (image != null) {
             JLabel(ImageIcon(image))
         } else {
             JLabel("Unable to load the Snapshot")
@@ -120,7 +120,7 @@ class Renderer(private val project: Project) : ListCellRenderer<Item> {
         panel.border = BorderFactory.createEmptyBorder(32, HORIZONTAL_PADDING, 32, HORIZONTAL_PADDING)
 
         panel.add(title)
-        panel.add(screenshot)
+        panel.add(snapshot)
         return panel
     }
 }

@@ -31,7 +31,7 @@ interface MainService {
 
     class Storage {
         // path to snapshots
-        // no of screenshots to show at a time (everything at once can cause OOM)
+        // no of snapshots to show at a time (everything at once can cause OOM)
         var isAutoChangeEnabled = true
         var isFitToWindow = true
     }
