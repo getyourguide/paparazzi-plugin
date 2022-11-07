@@ -1,8 +1,8 @@
 package com.getyourguide.paparazzi.actions
 
+import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.getyourguide.paparazzi.service.service
 
 class FitZoomToWindowAction : AnAction() {
 

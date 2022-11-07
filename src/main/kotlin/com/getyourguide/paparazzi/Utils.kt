@@ -1,11 +1,9 @@
 package com.getyourguide.paparazzi
 
 import com.getyourguide.paparazzi.service.Snapshot
-import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.CaretModel
 import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
@@ -26,13 +24,6 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.toUElement
 import java.io.File
 import java.util.concurrent.Callable
-
-internal fun Project.loadFromSelectedEditorFile() {
-    val file = FileEditorManager.getInstance(this)?.selectedEditor?.file
-    if (file != null) {
-        service.reload(file)
-    }
-}
 
 // TODO add param to run for TestClass, or TestMethod
 internal fun Project.runRecordPaparazzi(modulePath: String) {

@@ -16,6 +16,7 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.progress.ProcessCanceledException
@@ -61,7 +62,8 @@ interface MainService {
     fun zoomFitToWindow()
     fun zoomActualSize()
 
-    fun reload(file: VirtualFile?, methodName: String? = null)
+    fun loadFromSelectedEditor()
+    fun load(file: VirtualFile?, methodName: String? = null)
 }
 
 @State(name = "com.getyourguide.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
@@ -95,7 +97,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
             val file = event.newFile
             if (file != null && (file.extension == "kt" || file.extension == "java")) {
                 if (settings.isAutoLoadFileEnabled) {
-                    reload(file)
+                    load(file)
                 } else if (settings.isAutoLoadMethodEnabled) {
                     val caretModel = event.newEditor.caretModel
                     if (caretModel != null) {
@@ -103,9 +105,9 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                             val element = file.psiElement(project, caretModel.offset)
                             val containingUMethod = element?.containingMethod()
                             if (containingUMethod != null) {
-                                reload(file, containingUMethod.name)
+                                load(file, containingUMethod.name)
                             } else {
-                                reload(null)
+                                load(null)
                             }
                         }
                         caretModel.addCaretListener(caretListener, event.newEditor)
@@ -124,9 +126,9 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                     val element = file.psiElement(project, offset)
                     val containingUMethod = element?.containingMethod()
                     if (containingUMethod != null) {
-                        project.service.reload(file, containingUMethod.name)
+                        project.service.load(file, containingUMethod.name)
                     } else {
-                        project.service.reload(null)
+                        project.service.load(null)
                     }
                 }
             }
@@ -173,6 +175,20 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         reload()
     }
 
+    override fun loadFromSelectedEditor() {
+        val editor = FileEditorManager.getInstance(project)?.selectedEditor
+        val file = editor?.file
+        if (settings.isAutoLoadMethodEnabled) {
+            val offset = editor?.caretModel?.offset
+            if (offset != null) {
+                val method = file?.psiElement(project, offset)?.containingMethod()?.name
+                if (method != null) load(file, method) else load(null)
+            }
+        } else {
+            if (file != null) load(file)
+        }
+    }
+
     private fun reload() {
         val toList = model.elements().toList()
         model.clear()
@@ -182,7 +198,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         panel?.list?.ensureIndexIsVisible(0)
     }
 
-    override fun reload(file: VirtualFile?, methodName: String?) {
+    override fun load(file: VirtualFile?, methodName: String?) {
         reloadJob?.cancel()
         if (settings.isFitToWindow) {
             width = panel.allowedWidth
