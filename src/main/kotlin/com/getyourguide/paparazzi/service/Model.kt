@@ -1,7 +1,13 @@
 package com.getyourguide.paparazzi.service
 
+import com.getyourguide.paparazzi.containingMethod
 import com.getyourguide.paparazzi.methods
+import com.getyourguide.paparazzi.nonBlocking
+import com.getyourguide.paparazzi.psiElement
 import com.getyourguide.paparazzi.toSnapshots
+import com.intellij.openapi.editor.event.CaretEvent
+import com.intellij.openapi.editor.event.CaretListener
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
@@ -26,4 +32,23 @@ internal fun VirtualFile.toFileInfo(project: Project, isFailure: Boolean): FileI
         snapshots.removeAll(filtered)
         MethodInfo(name, filtered)
     })
+}
+
+class CaretModelListener(private val project: Project) : CaretListener {
+    override fun caretPositionChanged(event: CaretEvent) {
+        val file = FileDocumentManager.getInstance().getFile(event.editor.document)
+        val offset = event.caret?.offset
+        if (file != null && offset != null) {
+            load(file, offset)
+        }
+    }
+
+    fun load(file: VirtualFile, offset: Int) {
+        nonBlocking {
+            val method = file.psiElement(project, offset)?.containingMethod()?.name
+            with(project.service) {
+                if (method != null) load(file, method) else load(null)
+            }
+        }
+    }
 }

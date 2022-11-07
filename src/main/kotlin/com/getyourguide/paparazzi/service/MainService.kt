@@ -2,10 +2,8 @@ package com.getyourguide.paparazzi.service
 
 import com.getyourguide.paparazzi.PaparazziWindowPanel
 import com.getyourguide.paparazzi.caretModel
-import com.getyourguide.paparazzi.containingMethod
 import com.getyourguide.paparazzi.isToolWindowOpened
 import com.getyourguide.paparazzi.nonBlocking
-import com.getyourguide.paparazzi.psiElement
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.NonBlockingReadAction
 import com.intellij.openapi.application.ReadAction
@@ -13,9 +11,6 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
-import com.intellij.openapi.editor.event.CaretEvent
-import com.intellij.openapi.editor.event.CaretListener
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
@@ -77,6 +72,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     override var panel: PaparazziWindowPanel? = null
     override val model: DefaultListModel<Snapshot> = DefaultListModel()
     override var onlyShowFailures: Boolean = false
+    private val caretListener = CaretModelListener(project)
 
     private var reloadJob: CancellablePromise<List<Snapshot>>? = null
 
@@ -84,7 +80,6 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, this)
     }
 
-    private var caretListener = CaretModelListener(project)
 
     override fun selectionChanged(event: FileEditorManagerEvent) {
         super.selectionChanged(event)
@@ -101,34 +96,9 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                 } else if (settings.isAutoLoadMethodEnabled) {
                     val caretModel = event.newEditor.caretModel
                     if (caretModel != null) {
-                        nonBlocking {
-                            val element = file.psiElement(project, caretModel.offset)
-                            val containingUMethod = element?.containingMethod()
-                            if (containingUMethod != null) {
-                                load(file, containingUMethod.name)
-                            } else {
-                                load(null)
-                            }
-                        }
+                        val offset = caretModel.offset
+                        caretListener.load(file, offset)
                         caretModel.addCaretListener(caretListener, event.newEditor)
-                    }
-                }
-            }
-        }
-    }
-
-    private class CaretModelListener(private val project: Project) : CaretListener {
-        override fun caretPositionChanged(event: CaretEvent) {
-            nonBlocking {
-                val file = FileDocumentManager.getInstance().getFile(event.editor.document)
-                val offset = event.caret?.offset
-                if (file != null && offset != null) {
-                    val element = file.psiElement(project, offset)
-                    val containingUMethod = element?.containingMethod()
-                    if (containingUMethod != null) {
-                        project.service.load(file, containingUMethod.name)
-                    } else {
-                        project.service.load(null)
                     }
                 }
             }
@@ -176,25 +146,24 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     }
 
     override fun loadFromSelectedEditor() {
-        val editor = FileEditorManager.getInstance(project)?.selectedEditor
-        val file = editor?.file
-        if (settings.isAutoLoadMethodEnabled) {
-            val offset = editor?.caretModel?.offset
-            if (offset != null) {
-                val method = file?.psiElement(project, offset)?.containingMethod()?.name
-                if (method != null) load(file, method) else load(null)
+        nonBlocking {
+            val editor = FileEditorManager.getInstance(project)?.selectedEditor
+            val file = editor?.file
+            if (settings.isAutoLoadMethodEnabled) {
+                val offset = editor?.caretModel?.offset
+                if (file != null && offset != null) {
+                    caretListener.load(file, offset)
+                }
+            } else {
+                if (file != null) load(file)
             }
-        } else {
-            if (file != null) load(file)
         }
     }
 
     private fun reload() {
-        val toList = model.elements().toList()
+        val snapshots = model.elements().toList()
         model.clear()
-        toList.forEach { item ->
-            model.addElement(item)
-        }
+        snapshots.forEach(model::addElement)
         panel?.list?.ensureIndexIsVisible(0)
     }
 
