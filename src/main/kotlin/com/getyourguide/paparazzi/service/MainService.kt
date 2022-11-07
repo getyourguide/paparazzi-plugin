@@ -2,7 +2,11 @@ package com.getyourguide.paparazzi.service
 
 import com.getyourguide.paparazzi.Item
 import com.getyourguide.paparazzi.PaparazziWindowPanel
+import com.getyourguide.paparazzi.caretModel
+import com.getyourguide.paparazzi.containingMethod
 import com.getyourguide.paparazzi.isToolWindowOpened
+import com.getyourguide.paparazzi.nonBlocking
+import com.getyourguide.paparazzi.psiElement
 import com.getyourguide.paparazzi.toItems
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.NonBlockingReadAction
@@ -11,9 +15,10 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.editor.event.CaretEvent
+import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
-import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
@@ -78,18 +83,44 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, this)
     }
 
+    private var caretListener = CaretModelListener(project)
+
     override fun selectionChanged(event: FileEditorManagerEvent) {
         super.selectionChanged(event)
+
+        // Remove previously set listeners if any
+        event.oldEditor?.caretModel?.removeCaretListener(caretListener)
+        event.newEditor?.caretModel?.removeCaretListener(caretListener)
+
         if (project.isToolWindowOpened()) {
             val file = event.newFile
             if (file != null && (file.extension == "kt" || file.extension == "java")) {
                 if (settings.isAutoLoadFileEnabled) {
                     reload(file)
                 } else if (settings.isAutoLoadMethodEnabled) {
-                    val caret = (event.newEditor as? TextEditor)?.editor?.caretModel
-                    if (caret != null) {
-                        val offset = caret.offset
+                    val caretModel = event.newEditor.caretModel
+                    if (caretModel != null) {
+                        nonBlocking {
+                            val element = caretModel.psiElement(project, file)
+                            if (element != null) {
+                                val containingUMethod = element.containingMethod()
+                                println("Method = ${containingUMethod?.name}")
+                            }
+                        }
+                        caretModel.addCaretListener(caretListener, event.newEditor)
                     }
+                }
+            }
+        }
+    }
+
+    private class CaretModelListener(private val project: Project) : CaretListener {
+        override fun caretPositionChanged(event: CaretEvent) {
+            nonBlocking {
+                val element = event.psiElement(project)
+                if (element != null) {
+                    val containingUMethod = element.containingMethod()
+                    println("Method listener = ${containingUMethod?.name}")
                 }
             }
         }
