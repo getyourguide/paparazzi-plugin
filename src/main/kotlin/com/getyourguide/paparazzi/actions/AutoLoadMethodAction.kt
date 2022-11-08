@@ -8,13 +8,13 @@ class AutoLoadMethodAction : ToggleAction() {
 
     override fun isSelected(e: AnActionEvent): Boolean {
         val project = e.project ?: return false
-        return project.service.settings.isAutoLoadMethodEnabled
+        return project.service.isAutoLoadMethodEnabled
     }
 
     override fun setSelected(e: AnActionEvent, state: Boolean) {
         val project = e.project
         if (project != null) {
-            project.service.settings.isAutoLoadMethodEnabled = state
+            project.service.isAutoLoadMethodEnabled = state
             if (state) project.service.loadFromSelectedEditor()
         }
     }

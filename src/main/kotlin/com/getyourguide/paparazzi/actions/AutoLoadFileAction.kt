@@ -8,13 +8,13 @@ class AutoLoadFileAction : ToggleAction() {
 
     override fun isSelected(e: AnActionEvent): Boolean {
         val project = e.project ?: return false
-        return project.service.settings.isAutoLoadFileEnabled
+        return project.service.isAutoLoadFileEnabled
     }
 
     override fun setSelected(e: AnActionEvent, state: Boolean) {
         val project = e.project
         if (project != null) {
-            project.service.settings.isAutoLoadFileEnabled = state
+            project.service.isAutoLoadFileEnabled = state
             if (state) project.service.loadFromSelectedEditor()
         }
     }

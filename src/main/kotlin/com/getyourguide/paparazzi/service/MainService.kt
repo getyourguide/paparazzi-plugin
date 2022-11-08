@@ -35,15 +35,7 @@ interface MainService {
         // path to snapshots
         // no of snapshots to show at a time (everything at once can cause OOM)
         var isAutoLoadFileEnabled = true
-            set(value) {
-                field = value
-                if (value) isAutoLoadMethodEnabled = false
-            }
         var isAutoLoadMethodEnabled = false
-            set(value) {
-                field = value
-                if (value) isAutoLoadFileEnabled = false
-            }
         var isFitToWindow = true
     }
 
@@ -54,6 +46,9 @@ interface MainService {
     var onlyShowFailures: Boolean
 
     fun image(snapshot: Snapshot): Image?
+
+    var isAutoLoadFileEnabled: Boolean
+    var isAutoLoadMethodEnabled: Boolean
 
     fun zoomFitToWindow()
     fun zoomActualSize()
@@ -111,6 +106,28 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun image(snapshot: Snapshot): Image? = cacheImage(snapshot)
 
+    override var isAutoLoadFileEnabled: Boolean
+        get() = settings.isAutoLoadFileEnabled
+        set(value) {
+            settings.isAutoLoadFileEnabled = value
+            if (value) {
+                settings.isAutoLoadMethodEnabled = false
+                val editor = FileEditorManager.getInstance(project)?.selectedEditor
+                editor?.caretModel?.removeCaretListener(caretListener)
+            }
+        }
+    override var isAutoLoadMethodEnabled: Boolean
+        get() = settings.isAutoLoadMethodEnabled
+        set(value) {
+            settings.isAutoLoadMethodEnabled = value
+            if (value) {
+                settings.isAutoLoadFileEnabled = false
+                val editor = FileEditorManager.getInstance(project)?.selectedEditor
+                editor?.caretModel?.removeCaretListener(caretListener) // Remove if listener already added
+                editor?.caretModel?.addCaretListener(caretListener)
+            }
+        }
+
     private fun cacheImage(snapshot: Snapshot): Image? {
         val file = snapshot.file
         return cache.get()?.get(file) ?: try {
@@ -150,11 +167,11 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     }
 
     override fun loadFromSelectedEditor() {
+        val editor = FileEditorManager.getInstance(project)?.selectedEditor
         ReadAction.nonBlocking(Callable {
-            val editor = FileEditorManager.getInstance(project)?.selectedEditor
             val file = editor?.file
             previouslyLoaded = PreviouslyLoaded()
-            if (settings.isAutoLoadMethodEnabled) {
+            if (isAutoLoadMethodEnabled) {
                 val offset = editor?.caretModel?.offset
                 if (file != null && offset != null) {
                     caretListener.load(file, offset)
@@ -214,12 +231,12 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun loadAfterSnapshotsRecorded(psiClass: PsiClass, psiMethod: PsiMethod?) {
         onlyShowFailures = false
+        isAutoLoadMethodEnabled = false
+        isAutoLoadFileEnabled = false
         val file = psiClass.containingFile?.virtualFile
         if (psiMethod != null) {
-            settings.isAutoLoadMethodEnabled = true
             load(file, psiMethod.name)
         } else {
-            settings.isAutoLoadFileEnabled = true
             load(file)
         }
     }
