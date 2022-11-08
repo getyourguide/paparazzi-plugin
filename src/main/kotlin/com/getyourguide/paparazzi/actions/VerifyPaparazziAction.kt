@@ -13,10 +13,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 
-private const val ACTION_NAME = "Record Snapshots"
+private const val ACTION_NAME = "Verify Snapshots"
 
-class RecordPaparazziAction(private val psiClass: PsiClass, private val psiMethod: PsiMethod?) :
-    AnAction(ACTION_NAME, null, AllIcons.Debugger.Db_set_breakpoint) {
+class VerifyPaparazziAction(private val psiClass: PsiClass, private val psiMethod: PsiMethod?) :
+    AnAction(ACTION_NAME, null, AllIcons.RunConfigurations.TestState.Run) {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
@@ -28,8 +28,8 @@ class RecordPaparazziAction(private val psiClass: PsiClass, private val psiMetho
                     val testName = getQualifiedTestName(psiClass, psiMethod)
                     val param = if (testName != null) "--tests $testName" else ""
                     runGradle(
-                        project, modulePath, "recordPaparazziDebug $param",
-                        RecordTaskCallback(project, psiClass, psiMethod)
+                        project, modulePath, "verifyPaparazziDebug $param",
+                        VerifyTaskCallback(project, psiClass, psiMethod)
                     )
                 }
             }
@@ -37,7 +37,7 @@ class RecordPaparazziAction(private val psiClass: PsiClass, private val psiMetho
     }
 }
 
-class RecordTaskCallback(
+class VerifyTaskCallback(
     private val project: Project,
     private val psiClass: PsiClass,
     private val psiMethod: PsiMethod?
@@ -47,7 +47,6 @@ class RecordTaskCallback(
     }
 
     override fun onFailure() {
-        // Do nothing.
-        // TODO may be notify user that the operation failed?
+        project.service.loadAfterSnapshotsVerified(psiClass, psiMethod)
     }
 }

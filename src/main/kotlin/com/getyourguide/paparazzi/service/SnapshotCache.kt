@@ -18,5 +18,7 @@ internal class SnapshotCache(private val cacheLimit: Int = 20) {
 
     operator fun get(file: VirtualFile): Image? = cache.find { it.file == file }?.image
 
+    fun clear() = cache.clear()
+
     private data class Snapshot(val file: VirtualFile, val image: Image)
 }

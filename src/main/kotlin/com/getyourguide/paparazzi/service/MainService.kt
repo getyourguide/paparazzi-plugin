@@ -57,6 +57,7 @@ interface MainService {
     fun load(file: VirtualFile?, methodName: String? = null)
 
     fun loadAfterSnapshotsRecorded(psiClass: PsiClass, psiMethod: PsiMethod?)
+    fun loadAfterSnapshotsVerified(psiClass: PsiClass, psiMethod: PsiMethod?)
 }
 
 @State(name = "com.getyourguide.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
@@ -232,6 +233,21 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         onlyShowFailures = false
         isAutoLoadMethodEnabled = false
         isAutoLoadFileEnabled = false
+        previouslyLoaded = PreviouslyLoaded()
+        cache.get()?.clear() // May be instead of clearing, consider removing only the snapshots that are modified
+        val file = psiClass.containingFile?.virtualFile
+        if (psiMethod != null) {
+            load(file, psiMethod.name)
+        } else {
+            load(file)
+        }
+    }
+
+    override fun loadAfterSnapshotsVerified(psiClass: PsiClass, psiMethod: PsiMethod?) {
+        onlyShowFailures = true
+        isAutoLoadMethodEnabled = false
+        isAutoLoadFileEnabled = false
+        previouslyLoaded = PreviouslyLoaded()
         val file = psiClass.containingFile?.virtualFile
         if (psiMethod != null) {
             load(file, psiMethod.name)
