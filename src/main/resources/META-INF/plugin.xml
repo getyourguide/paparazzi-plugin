@@ -26,6 +26,10 @@
                     icon="/icons/icon.svg"/>
         <projectService serviceInterface="com.getyourguide.paparazzi.service.MainService"
                         serviceImplementation="com.getyourguide.paparazzi.service.MainServiceImpl"/>
+        <runLineMarkerContributor language="kotlin" order="last"
+                                  implementationClass="com.getyourguide.paparazzi.markers.PaparazziRunLineMarkerContributor"/>
+        <runLineMarkerContributor language="JAVA" order="last"
+                                  implementationClass="com.getyourguide.paparazzi.markers.PaparazziRunLineMarkerContributor"/>
     </extensions>
 
     <actions>
