@@ -64,7 +64,7 @@ private fun PsiClassOwner.toSnapshots(snapshots: List<VirtualFile>, isFailure: B
     }
 }
 
-internal fun PsiElement.file(project: Project): VirtualFile? {
+internal fun PsiElement.file(): VirtualFile? {
     return this.containingFile.virtualFile
 }
 

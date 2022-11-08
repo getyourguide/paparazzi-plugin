@@ -15,7 +15,7 @@ class RecordPaparazziAction(name: String, private val psiClass: PsiClass, privat
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
         if (project != null) {
-            val file = psiClass.file(project)
+            val file = psiClass.file()
             if (file != null) {
                 val modulePath = project.modulePath(file)
                 if (modulePath != null) {
