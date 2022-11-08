@@ -8,6 +8,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class RefreshAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.service?.loadFromSelectedEditor()
+        e.project?.service?.loadFromSelectedEditor(true)
     }
 }

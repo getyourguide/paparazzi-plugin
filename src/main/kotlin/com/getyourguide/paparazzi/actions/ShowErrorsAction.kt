@@ -15,7 +15,7 @@ class ShowErrorsAction : ToggleAction() {
         val project = e.project
         if (project != null) {
             project.service.onlyShowFailures = state
-            project.service.loadFromSelectedEditor()
+            project.service.loadFromSelectedEditor(false)
         }
     }
 }

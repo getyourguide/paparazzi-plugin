@@ -15,7 +15,7 @@ class AutoLoadMethodAction : ToggleAction() {
         val project = e.project
         if (project != null) {
             project.service.isAutoLoadMethodEnabled = state
-            if (state) project.service.loadFromSelectedEditor()
+            if (state) project.service.loadFromSelectedEditor(false)
         }
     }
 }

@@ -53,7 +53,7 @@ interface MainService {
     fun zoomFitToWindow()
     fun zoomActualSize()
 
-    fun loadFromSelectedEditor()
+    fun loadFromSelectedEditor(fullRefresh: Boolean)
     fun load(file: VirtualFile?, methodName: String? = null)
 
     fun loadAfterSnapshotsRecorded(psiClass: PsiClass, psiMethod: PsiMethod?)
@@ -166,11 +166,12 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         reload()
     }
 
-    override fun loadFromSelectedEditor() {
+    override fun loadFromSelectedEditor(fullRefresh: Boolean) {
         val editor = FileEditorManager.getInstance(project)?.selectedEditor
         ReadAction.nonBlocking(Callable {
             val file = editor?.file
             previouslyLoaded = PreviouslyLoaded()
+            if (fullRefresh) cache.get()?.clear()
             if (isAutoLoadMethodEnabled) {
                 val offset = editor?.caretModel?.offset
                 if (file != null && offset != null) {
@@ -186,6 +187,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     private fun reload() {
         val snapshots = model.elements().toList()
         model.clear()
+        cache.get()?.clear()
         snapshots.forEach(model::addElement)
         panel?.list?.ensureIndexIsVisible(0)
     }
@@ -248,12 +250,20 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         isAutoLoadMethodEnabled = false
         isAutoLoadFileEnabled = false
         previouslyLoaded = PreviouslyLoaded()
-        val file = psiClass.containingFile?.virtualFile
-        if (psiMethod != null) {
-            load(file, psiMethod.name)
-        } else {
-            load(file)
-        }
+        cache.get()?.clear() // May be instead of clearing, consider removing only the snapshots that are modified
+        ReadAction.nonBlocking(Callable {
+            // Temporary workaround. We need stall sometime for the Failure virtualFile to be created.
+            // If we run load() before that, then we will show "Nothing to show"
+            // TODO Try to listen to the file creation instead of sleeping
+            Thread.sleep(1000)
+        }).finishOnUiThread(ModalityState.defaultModalityState()) {
+            val file = psiClass.containingFile?.virtualFile
+            if (psiMethod != null) {
+                load(file, psiMethod.name)
+            } else {
+                load(file)
+            }
+        }.submit(AppExecutorUtil.getAppExecutorService())
     }
 
     override fun getState(): MainService.Storage = storage
@@ -268,7 +278,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     private val PaparazziWindowPanel?.allowedWidth: Int
         get() {
             return if (this != null) {
-                (this.width - HORIZONTAL_PADDING * 2).coerceIn(200, 500)
+                (this.width - HORIZONTAL_PADDING * 2).coerceIn(200, 1000)
             } else 0
         }
 }

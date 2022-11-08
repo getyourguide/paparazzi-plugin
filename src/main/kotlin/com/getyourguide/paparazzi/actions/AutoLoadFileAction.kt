@@ -15,7 +15,7 @@ class AutoLoadFileAction : ToggleAction() {
         val project = e.project
         if (project != null) {
             project.service.isAutoLoadFileEnabled = state
-            if (state) project.service.loadFromSelectedEditor()
+            if (state) project.service.loadFromSelectedEditor(false)
         }
     }
 }
