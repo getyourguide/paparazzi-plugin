@@ -24,7 +24,6 @@ intellij {
 }
 
 tasks {
-
     runIde {
         // Absolute path to installed target 3.5 Android Studio to use as
         // IDE Development Instance (the "Contents" directory is macOS specific):

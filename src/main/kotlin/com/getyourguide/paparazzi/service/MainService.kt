@@ -3,7 +3,6 @@ package com.getyourguide.paparazzi.service
 import com.getyourguide.paparazzi.PaparazziWindowPanel
 import com.getyourguide.paparazzi.caretModel
 import com.getyourguide.paparazzi.isToolWindowOpened
-import com.getyourguide.paparazzi.nonBlocking
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.NonBlockingReadAction
 import com.intellij.openapi.application.ReadAction
@@ -147,7 +146,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     }
 
     override fun loadFromSelectedEditor() {
-        nonBlocking {
+        ReadAction.nonBlocking(Callable {
             val editor = FileEditorManager.getInstance(project)?.selectedEditor
             val file = editor?.file
             previouslyLoaded = PreviouslyLoaded()
@@ -156,10 +155,11 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                 if (file != null && offset != null) {
                     caretListener.load(file, offset)
                 }
-            } else {
-                if (file != null) load(file)
             }
-        }
+            file
+        }).finishOnUiThread(ModalityState.defaultModalityState()) { file ->
+            if (file != null) load(file)
+        }.submit(AppExecutorUtil.getAppExecutorService())
     }
 
     private fun reload() {
