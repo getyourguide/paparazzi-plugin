@@ -17,6 +17,8 @@ import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiMethod
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.jetbrains.concurrency.CancellablePromise
 import java.awt.Image
@@ -58,6 +60,8 @@ interface MainService {
 
     fun loadFromSelectedEditor()
     fun load(file: VirtualFile?, methodName: String? = null)
+
+    fun loadAfterSnapshotsRecorded(psiClass: PsiClass, psiMethod: PsiMethod?)
 }
 
 @State(name = "com.getyourguide.paparazzi", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
@@ -206,6 +210,18 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
             previouslyLoaded = PreviouslyLoaded(file, methodName)
             panel?.list?.ensureIndexIsVisible(0)
         }.submit(AppExecutorUtil.getAppExecutorService())
+    }
+
+    override fun loadAfterSnapshotsRecorded(psiClass: PsiClass, psiMethod: PsiMethod?) {
+        onlyShowFailures = false
+        val file = psiClass.containingFile?.virtualFile
+        if (psiMethod != null) {
+            settings.isAutoLoadMethodEnabled = true
+            load(file, psiMethod.name)
+        } else {
+            settings.isAutoLoadFileEnabled = true
+            load(file)
+        }
     }
 
     override fun getState(): MainService.Storage = storage
