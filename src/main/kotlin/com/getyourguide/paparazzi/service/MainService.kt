@@ -111,19 +111,18 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         set(value) {
             settings.isAutoLoadFileEnabled = value
             if (value) {
-                settings.isAutoLoadMethodEnabled = false
-                val editor = FileEditorManager.getInstance(project)?.selectedEditor
-                editor?.caretModel?.removeCaretListener(caretListener)
+                isAutoLoadMethodEnabled = false
             }
         }
+
     override var isAutoLoadMethodEnabled: Boolean
         get() = settings.isAutoLoadMethodEnabled
         set(value) {
             settings.isAutoLoadMethodEnabled = value
+            val editor = FileEditorManager.getInstance(project)?.selectedEditor
+            editor?.caretModel?.removeCaretListener(caretListener) // Remove if listener already added
             if (value) {
-                settings.isAutoLoadFileEnabled = false
-                val editor = FileEditorManager.getInstance(project)?.selectedEditor
-                editor?.caretModel?.removeCaretListener(caretListener) // Remove if listener already added
+                isAutoLoadFileEnabled = false
                 editor?.caretModel?.addCaretListener(caretListener)
             }
         }

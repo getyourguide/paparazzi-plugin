@@ -38,7 +38,7 @@
                 icon="AllIcons.Actions.Refresh"
                 text="Refresh"/>
         <action id="com.getyourguide.paparazzi.actions.AutoLoadFileAction" icon="/icons/class.svg"
-                text="Show Snapshots for Current File"
+                text="Show Snapshots for Current Class"
                 class="com.getyourguide.paparazzi.actions.AutoLoadFileAction"/>
         <action id="com.getyourguide.paparazzi.actions.AutoLoadMethodAction" icon="/icons/method.svg"
                 text="Show Snapshots for Current Method"
