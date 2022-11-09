@@ -22,7 +22,7 @@ import java.util.concurrent.Callable
 private const val ACTION_NAME = "Verify Snapshots"
 
 class VerifyPaparazziAction(private val psiClass: PsiClass, private val psiMethod: PsiMethod?) :
-    AnAction(ACTION_NAME, null, AllIcons.RunConfigurations.TestState.Run) {
+    AnAction(ACTION_NAME, null, AllIcons.Actions.Execute) {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project

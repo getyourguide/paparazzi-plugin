@@ -37,6 +37,12 @@ interface MainService {
         var isAutoLoadFileEnabled = true
         var isAutoLoadMethodEnabled = false
         var isFitToWindow = true
+
+        var recordSnapshotsCommand = "recordPaparazziDebug"
+        var verifySnapshotsCommand = "verifyPaparazziDebug"
+
+        var recordExtraParams = ""
+        var verifyExtraParams = ""
     }
 
     var panel: PaparazziWindowPanel?

@@ -30,6 +30,9 @@
                                   implementationClass="com.getyourguide.paparazzi.markers.PaparazziRunLineMarkerContributor"/>
         <runLineMarkerContributor language="JAVA" order="last"
                                   implementationClass="com.getyourguide.paparazzi.markers.PaparazziRunLineMarkerContributor"/>
+        <projectConfigurable parentId="tools" instance="com.getyourguide.paparazzi.service.ProjectSettingsConfigurable"
+                             id="com.getyourguide.paparazzi.service.ProjectSettingsConfigurable"
+                             displayName="Paparazzi" nonDefaultProject="true"/>
     </extensions>
 
     <actions>
