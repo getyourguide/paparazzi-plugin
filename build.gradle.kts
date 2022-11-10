@@ -25,7 +25,7 @@ intellij {
 
 tasks {
     runIde {
-        // Absolute path to installed target 3.5 Android Studio to use as
+        // Absolute path to installed target Android Studio to use as
         // IDE Development Instance (the "Contents" directory is macOS specific):
         ideDir.set(file("/Applications/Android Studio.app/Contents"))
     }
@@ -39,7 +39,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("210")
+        sinceBuild.set("210") // Support from Android Studio BumbleBee
 //        untilBuild.set("223.*")
     }
 

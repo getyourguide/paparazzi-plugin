@@ -84,8 +84,11 @@ private fun VirtualFile.snapshotName(qualifiedTestName: String): String {
 }
 
 private fun Project.recordedSnapshots(file: VirtualFile): List<VirtualFile> {
-    return file.getModule(this)?.rootManager?.contentRoots?.find {
-        it.name == "test"
+    val modulePath = modulePath(file)
+    return if (modulePath != null) {
+        LocalFileSystem.getInstance().findFileByPath(modulePath)?.findChild("src")?.findChild("test")
+    } else {
+        file.getModule(this)?.rootManager?.contentRoots?.find { it.name == "test" }
     }?.findChild("snapshots")?.findChild("images")?.children?.toList() ?: emptyList()
 }
 

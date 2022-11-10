@@ -50,6 +50,7 @@ class VerifyTaskCallback(
     private val psiClass: PsiClass,
     private val psiMethod: PsiMethod?
 ) : TaskCallback {
+
     override fun onSuccess() {
         project.service.loadAfterSnapshotsRecorded(psiClass, psiMethod)
         deleteFailureSnapshots(psiClass, psiMethod)

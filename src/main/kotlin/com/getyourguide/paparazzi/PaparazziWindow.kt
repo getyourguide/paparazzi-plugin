@@ -56,11 +56,11 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel()
         toolWindow.contentManager.addContent(content)
         list.cellRenderer = Renderer(project)
 
-        setContent(getContentPanel(project))
+        setContent(getContentPanel())
         project.service.panel = this
     }
 
-    private fun getContentPanel(project: Project): JPanel {
+    private fun getContentPanel(): JPanel {
 
         val panel = JBPanel<SimpleToolWindowPanel>(
             GridLayoutManager(
