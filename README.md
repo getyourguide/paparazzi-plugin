@@ -14,7 +14,9 @@ release</a>.
 Features
 -----
 
-- View previously-recorded golden snapshots for the current test file opened in the editor
-- View failure diffs for the current test file
+- View previously-recorded golden snapshots for the currently opened test class
+- View golden snapshots of the current focussed test method 
+- View failure diffs for the current test class or method
+- Record and Verify snapshots for individual tests or for entire test class
 - Zoom options for Actual Size and Fit to Window
 - Fully supported for test files written in Java or Kotlin

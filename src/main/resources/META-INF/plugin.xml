@@ -10,7 +10,9 @@
     <p>Features</p>
         <ul>
             <li>View previously-recorded golden snapshots for the current test file opened in the editor</li>
-            <li>View failure diffs for the current test file</li>
+            <li>View golden snapshots of the current focussed test method</li>
+            <li>View failure diffs for the current test class or method</li>
+            <li>Record and Verify snapshots for individual tests or for entire test class</li>
             <li>Zoom options for Actual Size and Fit to Window</li>
             <li>Fully supported for test files written in Java or Kotlin</li>
         </ul>

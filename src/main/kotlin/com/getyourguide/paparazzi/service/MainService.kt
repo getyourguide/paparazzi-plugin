@@ -241,24 +241,21 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         onlyShowFailures = false
         isAutoLoadMethodEnabled = false
         isAutoLoadFileEnabled = false
-        previouslyLoaded = PreviouslyLoaded()
-        cache.get()?.clear() // May be instead of clearing, consider removing only the snapshots that are modified
-        val file = psiClass.containingFile?.virtualFile
-        if (psiMethod != null) {
-            load(file, psiMethod.name)
-        } else {
-            load(file)
-        }
+        loadSnapshots(psiClass, psiMethod)
     }
 
     override fun loadAfterSnapshotsVerified(psiClass: PsiClass, psiMethod: PsiMethod?) {
         onlyShowFailures = true
         isAutoLoadMethodEnabled = false
         isAutoLoadFileEnabled = false
+        loadSnapshots(psiClass, psiMethod)
+    }
+
+    private fun loadSnapshots(psiClass: PsiClass, psiMethod: PsiMethod?) {
         previouslyLoaded = PreviouslyLoaded()
         cache.get()?.clear() // May be instead of clearing, consider removing only the snapshots that are modified
         ReadAction.nonBlocking(Callable {
-            // Temporary workaround. We need stall sometime for the Failure virtualFile to be created.
+            // Temporary workaround. We need stall sometime for the virtualFile to be created.
             // If we run load() before that, then we will show "Nothing to show"
             // TODO Try to listen to the file creation instead of sleeping
             Thread.sleep(1000)
