@@ -27,8 +27,10 @@ class RecordPaparazziAction(private val psiClass: PsiClass, private val psiMetho
                 if (modulePath != null) {
                     val testName = getQualifiedTestName(psiClass, psiMethod)
                     val param = if (testName != null) "--tests $testName" else ""
+                    val gradleCommand = project.service.settings.recordSnapshotsCommand
+                    val scriptParams = project.service.settings.recordScriptParams
                     runGradle(
-                        project, modulePath, "recordPaparazziDebug $param",
+                        project, modulePath, "$gradleCommand $param", scriptParams,
                         RecordTaskCallback(project, psiClass, psiMethod)
                     )
                 }

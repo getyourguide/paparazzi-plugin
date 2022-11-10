@@ -33,8 +33,10 @@ class VerifyPaparazziAction(private val psiClass: PsiClass, private val psiMetho
                 if (modulePath != null) {
                     val testName = getQualifiedTestName(psiClass, psiMethod)
                     val param = if (testName != null) "--tests $testName" else ""
+                    val gradleCommand = project.service.settings.verifySnapshotsCommand
+                    val scriptParams = project.service.settings.verifyScriptParams
                     runGradle(
-                        project, modulePath, "verifyPaparazziDebug $param",
+                        project, modulePath, "$gradleCommand $param", scriptParams,
                         VerifyTaskCallback(project, psiClass, psiMethod)
                     )
                 }

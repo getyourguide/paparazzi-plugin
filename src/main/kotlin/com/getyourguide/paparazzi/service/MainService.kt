@@ -41,8 +41,8 @@ interface MainService {
         var recordSnapshotsCommand = "recordPaparazziDebug"
         var verifySnapshotsCommand = "verifyPaparazziDebug"
 
-        var recordExtraParams = ""
-        var verifyExtraParams = ""
+        var recordScriptParams = ""
+        var verifyScriptParams = ""
     }
 
     var panel: PaparazziWindowPanel?
