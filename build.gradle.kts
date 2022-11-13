@@ -13,7 +13,7 @@ repositories {
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
-    version.set("213.7172.25")
+    version.set("222.4345.14")
     plugins.set(listOf("android", "Kotlin", "java", "gradle"))
 
     tasks {
@@ -39,7 +39,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("210") // Support from Android Studio BumbleBee
+        sinceBuild.set("210") // Support from Android Studio BumbleBee / IntelliJ iDEA 2021.1
 //        untilBuild.set("223.*")
     }
 

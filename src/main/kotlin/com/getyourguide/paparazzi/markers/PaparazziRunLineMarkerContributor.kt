@@ -111,7 +111,13 @@ internal fun getQualifiedTestName(psiClass: PsiClass, psiMethod: PsiMethod?): St
     return null
 }
 
-internal fun runGradle(project: Project, path: String, fullCommandLine: String, scriptParams: String, callback: TaskCallback) {
+internal fun runGradle(
+    project: Project,
+    path: String,
+    fullCommandLine: String,
+    scriptParams: String,
+    callback: TaskCallback
+) {
     val settings = ExternalSystemTaskExecutionSettings()
     settings.externalProjectPath = path
     settings.taskNames = fullCommandLine.trim().split(" ")

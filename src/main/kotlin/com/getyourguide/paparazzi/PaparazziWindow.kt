@@ -19,7 +19,6 @@ import com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH
 import com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED
 import com.intellij.uiDesigner.core.GridLayoutManager
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Component
 import java.awt.Insets
 import java.awt.Rectangle
@@ -38,17 +37,15 @@ const val TOOL_WINDOW_ID = "Paparazzi"
 
 class PaparazziWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        MyPanel(toolWindow, project)
+        PaparazziWindowPanelImpl(toolWindow, project)
     }
 }
 
-class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel() {
+internal class PaparazziWindowPanelImpl(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel() {
 
     private val model = project.service.model
     override val list = object : JBList<Snapshot>(model) {
-        override fun getScrollableUnitIncrement(visibleRect: Rectangle?, orientation: Int, direction: Int): Int {
-            return 30
-        }
+        override fun getScrollableUnitIncrement(visibleRect: Rectangle?, orientation: Int, direction: Int): Int = 30
     }
 
     init {
@@ -63,9 +60,7 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel()
     private fun getContentPanel(): JPanel {
 
         val panel = JBPanel<SimpleToolWindowPanel>(
-            GridLayoutManager(
-                2, 1, Insets(0, 0, 0, 0), 0, 0
-            )
+            GridLayoutManager(2, 1, Insets(0, 0, 0, 0), 0, 0)
         )
 
         val toolbar = JPanel(BorderLayout())
@@ -77,15 +72,12 @@ class MyPanel(toolWindow: ToolWindow, project: Project) : PaparazziWindowPanel()
             vSizePolicy = SIZEPOLICY_FIXED
         })
 
-        val jbScrollPane = JBScrollPane(
-            list, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED
-        )
-        list.foreground = Color.RED
-        jbScrollPane.background = Color.GREEN
-        panel.add(jbScrollPane, GridConstraints().apply {
-            row = 1
-            fill = FILL_BOTH
-        })
+        panel.add(
+            JBScrollPane(list, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED),
+            GridConstraints().apply {
+                row = 1
+                fill = FILL_BOTH
+            })
 
         return panel
     }
@@ -104,13 +96,9 @@ abstract class PaparazziWindowPanel : SimpleToolWindowPanel(true, true) {
     abstract val list: JBList<Snapshot>
 }
 
-class Renderer(private val project: Project) : ListCellRenderer<Snapshot> {
+internal class Renderer(private val project: Project) : ListCellRenderer<Snapshot> {
     override fun getListCellRendererComponent(
-        list: JList<out Snapshot>?,
-        value: Snapshot,
-        index: Int,
-        isSelected: Boolean,
-        cellHasFocus: Boolean
+        list: JList<out Snapshot>?, value: Snapshot, index: Int, isSelected: Boolean, cellHasFocus: Boolean
     ): Component {
         val image = project.service.image(value)
         val title = JLabel(value.name).apply {
@@ -122,13 +110,11 @@ class Renderer(private val project: Project) : ListCellRenderer<Snapshot> {
             JLabel("Unable to load the Snapshot")
         }
 
-        val panel = JPanel()
-        val boxLayout = BoxLayout(panel, BoxLayout.Y_AXIS)
-        panel.layout = boxLayout
-        panel.border = BorderFactory.createEmptyBorder(32, HORIZONTAL_PADDING, 32, HORIZONTAL_PADDING)
-
-        panel.add(title)
-        panel.add(snapshot)
-        return panel
+        return JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            border = BorderFactory.createEmptyBorder(32, HORIZONTAL_PADDING, 32, HORIZONTAL_PADDING)
+            add(title)
+            add(snapshot)
+        }
     }
 }

@@ -5,7 +5,7 @@ import com.getyourguide.paparazzi.markers.getQualifiedTestName
 import com.getyourguide.paparazzi.markers.runGradle
 import com.getyourguide.paparazzi.modulePath
 import com.getyourguide.paparazzi.service.service
-import com.intellij.icons.AllIcons
+import com.intellij.icons.AllIcons.Debugger.Db_set_breakpoint
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.externalSystem.task.TaskCallback
@@ -15,41 +15,42 @@ import com.intellij.psi.PsiMethod
 
 private const val ACTION_NAME = "Record Snapshots"
 
+/**
+ * Runs the Record Paparazzi gradle command with the '--tests' filter enabled for the [test class][psiClass] or for the
+ * [test method][psiMethod]
+ *
+ * @param psiClass the [PsiClass] of the test class for which the snapshots should be recorded
+ * @param psiMethod the [PsiMethod] of the test method for which the snapshots should be recorded
+ */
 class RecordPaparazziAction(private val psiClass: PsiClass, private val psiMethod: PsiMethod?) :
-    AnAction(ACTION_NAME, null, AllIcons.Debugger.Db_set_breakpoint) {
+    AnAction(ACTION_NAME, null, Db_set_breakpoint) {
 
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project
-        if (project != null) {
-            val file = psiClass.file()
-            if (file != null) {
-                val modulePath = project.modulePath(file)
-                if (modulePath != null) {
-                    val testName = getQualifiedTestName(psiClass, psiMethod)
-                    val param = if (testName != null) "--tests $testName" else ""
-                    val gradleCommand = project.service.settings.recordSnapshotsCommand
-                    val scriptParams = project.service.settings.recordScriptParams
-                    runGradle(
-                        project, modulePath, "$gradleCommand $param", scriptParams,
-                        RecordTaskCallback(project, psiClass, psiMethod)
-                    )
-                }
-            }
-        }
+        val project = e.project ?: return
+        val file = psiClass.file() ?: return
+        val modulePath = project.modulePath(file) ?: return
+        val testName = getQualifiedTestName(psiClass, psiMethod)
+        val gradleCommand = project.service.settings.recordSnapshotsCommand
+        val scriptParams = project.service.settings.recordScriptParams
+        val filters = if (testName != null) "--tests $testName" else ""
+        runGradle(
+            project,
+            modulePath,
+            "$gradleCommand $filters",
+            scriptParams,
+            RecordTaskCallback(project, psiClass, psiMethod)
+        )
     }
 }
 
-class RecordTaskCallback(
-    private val project: Project,
-    private val psiClass: PsiClass,
-    private val psiMethod: PsiMethod?
+internal class RecordTaskCallback(
+    private val project: Project, private val psiClass: PsiClass, private val psiMethod: PsiMethod?
 ) : TaskCallback {
     override fun onSuccess() {
         project.service.loadAfterSnapshotsRecorded(psiClass, psiMethod)
     }
 
     override fun onFailure() {
-        // Do nothing.
         // TODO may be notify the user that the operation failed?
     }
 }

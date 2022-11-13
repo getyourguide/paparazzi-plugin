@@ -4,6 +4,10 @@ import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
 
+/**
+ * When the toggle is ON, the pre-recorded golden snapshots for the file in the current editor is loaded
+ * in the tool window
+ */
 class AutoLoadFileAction : ToggleAction() {
 
     override fun isSelected(e: AnActionEvent): Boolean {
@@ -12,10 +16,8 @@ class AutoLoadFileAction : ToggleAction() {
     }
 
     override fun setSelected(e: AnActionEvent, state: Boolean) {
-        val project = e.project
-        if (project != null) {
-            project.service.isAutoLoadFileEnabled = state
-            if (state) project.service.loadFromSelectedEditor(false)
-        }
+        val project = e.project ?: return
+        project.service.isAutoLoadFileEnabled = state
+        if (state) project.service.loadFromSelectedEditor(false)
     }
 }

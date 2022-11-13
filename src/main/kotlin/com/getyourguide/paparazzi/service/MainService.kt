@@ -3,6 +3,7 @@ package com.getyourguide.paparazzi.service
 import com.getyourguide.paparazzi.PaparazziWindowPanel
 import com.getyourguide.paparazzi.caretModel
 import com.getyourguide.paparazzi.isToolWindowOpened
+import com.getyourguide.paparazzi.nonBlocking
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.NonBlockingReadAction
 import com.intellij.openapi.application.ReadAction
@@ -50,11 +51,10 @@ interface MainService {
     val settings: Storage
 
     var onlyShowFailures: Boolean
-
-    fun image(snapshot: Snapshot): Image?
-
     var isAutoLoadFileEnabled: Boolean
     var isAutoLoadMethodEnabled: Boolean
+
+    fun image(snapshot: Snapshot): Image?
 
     fun zoomFitToWindow()
     fun zoomActualSize()
@@ -86,10 +86,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         project.messageBus.connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, this)
     }
 
-
     override fun selectionChanged(event: FileEditorManagerEvent) {
-        super.selectionChanged(event)
-
         // Remove previously set listeners if any
         event.oldEditor?.caretModel?.removeCaretListener(caretListener)
         event.newEditor?.caretModel?.removeCaretListener(caretListener)
@@ -174,7 +171,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
 
     override fun loadFromSelectedEditor(fullRefresh: Boolean) {
         val editor = FileEditorManager.getInstance(project)?.selectedEditor
-        ReadAction.nonBlocking(Callable {
+        nonBlocking(asyncAction = {
             val file = editor?.file
             previouslyLoaded = PreviouslyLoaded()
             if (fullRefresh) cache.get()?.clear()
@@ -185,9 +182,9 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                 }
             }
             file
-        }).finishOnUiThread(ModalityState.defaultModalityState()) { file ->
+        }) { file ->
             if (file != null) load(file)
-        }.submit(AppExecutorUtil.getAppExecutorService())
+        }
     }
 
     private fun reload() {
@@ -254,19 +251,19 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
     private fun loadSnapshots(psiClass: PsiClass, psiMethod: PsiMethod?) {
         previouslyLoaded = PreviouslyLoaded()
         cache.get()?.clear() // May be instead of clearing, consider removing only the snapshots that are modified
-        ReadAction.nonBlocking(Callable {
+        nonBlocking(asyncAction = {
             // Temporary workaround. We need stall sometime for the virtualFile to be created.
             // If we run load() before that, then we will show "Nothing to show"
             // TODO Try to listen to the file creation instead of sleeping
             Thread.sleep(1000)
-        }).finishOnUiThread(ModalityState.defaultModalityState()) {
+        }) {
             val file = psiClass.containingFile?.virtualFile
             if (psiMethod != null) {
                 load(file, psiMethod.name)
             } else {
                 load(file)
             }
-        }.submit(AppExecutorUtil.getAppExecutorService())
+        }
     }
 
     override fun getState(): MainService.Storage = storage
@@ -286,7 +283,7 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
         }
 }
 
-val Project.service: MainService
+internal val Project.service: MainService
     get() {
         return this.getService(MainService::class.java)
     }
