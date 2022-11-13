@@ -35,6 +35,7 @@
         <projectConfigurable parentId="tools" instance="com.getyourguide.paparazzi.service.ProjectSettingsConfigurable"
                              id="com.getyourguide.paparazzi.service.ProjectSettingsConfigurable"
                              displayName="Paparazzi" nonDefaultProject="true"/>
+        <postStartupActivity implementation="com.getyourguide.paparazzi.service.ProjectStartupActivity"/>
     </extensions>
 
     <actions>
