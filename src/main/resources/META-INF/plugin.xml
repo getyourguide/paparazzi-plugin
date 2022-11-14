@@ -3,7 +3,7 @@
 
     <name>Paparazzi</name>
 
-    <vendor email="saravana.thiyagaraj@getyourguide.com" url="https://github.com/getyourguide">GetYourGuide</vendor>
+    <vendor email="nativeapps-android@getyourguide.com" url="https://code.getyourguide.com/">GetYourGuide</vendor>
 
     <description><![CDATA[
     <p>Support for <b>Android</b> projects using the <a href="https://github.com/cashapp/paparazzi">Paparazzi</a> library</p><br/>
