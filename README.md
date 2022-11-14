@@ -23,12 +23,13 @@ Features
 
 Testing
 -----
-
 Any changes made to the plugin should be tested against the
 <a href="https://github.com/cashapp/paparazzi/tree/master/sample">sample paparazzi</a> android project.
 
+Contributing
+-----
+We welcome contributions, and if you're interested, have a look at the [CONTRIBUTING](CONTRIBUTING.md) document.
+
 License
 -----
-
-paparazzi-plugin is licensed under the Apache License, Version 2.0.
-See <a href="https://github.com/getyourguide/paparazzi-plugin/blob/main/LICENSE">LICENSE</a> for the full text.
+paparazzi-plugin is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full text.
