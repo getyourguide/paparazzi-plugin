@@ -1,7 +1,7 @@
 # <img src="/preview/logo.png" title="logo" height="80" width="80" /> Paparazzi Plugin
 
 IntelliJ iDEA / Android Studio plugin for Android projects using the <a href="https://github.com/cashapp/paparazzi">
-Paparazzi</a> library
+Paparazzi</a> library that allows recording, verifying and viewing the snapshots within the IDE.
 
 <img src="/preview/screenshare.gif" alt="preview" title="preview"/>
 
