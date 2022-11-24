@@ -7,9 +7,8 @@ Paparazzi</a> library that allows recording, verifying and viewing the snapshots
 
 Install
 -----
-**TBD** - Upload the plugin to the Jetbrains Marketplace and link it here. <br>
-Until then, download the zip file from the latest <a href="https://github.com/getyourguide/paparazzi-plugin/releases">
-release</a>.
+You can install the plugin from `Preferences` -> `Plugins` and search for the plugin. You can also download the 
+plugin from the <a href="https://plugins.jetbrains.com/plugin/20517-paparazzi">intelliJ iDEA Marketplace</a>.
 
 Features
 -----
