@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.getyourguide"
-version = "0.3"
+version = "1.0"
 
 repositories {
     mavenCentral()

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0
+
+- Android Electric Eel Beta and Flamingo Canary are supported with limitations
+- Load snapshots on project startup for the test class opened in the editor
+
 ## 0.3
 
 - Added Settings screen to configure the Gradle command and add extra script parameters
