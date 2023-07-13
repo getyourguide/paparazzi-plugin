@@ -37,6 +37,7 @@
                              displayName="Paparazzi" nonDefaultProject="true"/>
         <postStartupActivity implementation="com.getyourguide.paparazzi.service.ProjectStartupActivity"/>
         <dependencySupport kind="java" coordinate="app.cash.paparazzi:paparazzi" displayName="Paparazzi"/>
+        <refactoring.elementListenerProvider implementation="com.getyourguide.paparazzi.listeners.RefactoringListenerProvider"/>
     </extensions>
 
     <actions>
