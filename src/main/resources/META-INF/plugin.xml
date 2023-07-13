@@ -36,6 +36,7 @@
                              id="com.getyourguide.paparazzi.service.ProjectSettingsConfigurable"
                              displayName="Paparazzi" nonDefaultProject="true"/>
         <postStartupActivity implementation="com.getyourguide.paparazzi.service.ProjectStartupActivity"/>
+        <dependencySupport kind="java" coordinate="app.cash.paparazzi:paparazzi" displayName="Paparazzi"/>
     </extensions>
 
     <actions>
