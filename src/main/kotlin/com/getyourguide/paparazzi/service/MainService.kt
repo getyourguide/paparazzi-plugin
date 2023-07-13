@@ -97,11 +97,12 @@ class MainServiceImpl(private val project: Project) : MainService, PersistentSta
                 if (settings.isAutoLoadFileEnabled) {
                     load(file)
                 } else if (settings.isAutoLoadMethodEnabled) {
-                    val caretModel = event.newEditor.caretModel
-                    if (caretModel != null) {
+                    val newEditor = event.newEditor
+                    val caretModel = newEditor?.caretModel
+                    if (newEditor != null && caretModel != null) {
                         val offset = caretModel.offset
                         caretListener.load(file, offset)
-                        caretModel.addCaretListener(caretListener, event.newEditor)
+                        caretModel.addCaretListener(caretListener, newEditor)
                     }
                 }
             }
