@@ -1,5 +1,6 @@
 package com.getyourguide.paparazzi.markers
 
+import com.getyourguide.paparazzi.actions.DeleteFileAction
 import com.getyourguide.paparazzi.actions.RecordPaparazziAction
 import com.getyourguide.paparazzi.actions.VerifyPaparazziAction
 import com.intellij.codeInsight.TestFrameworks
@@ -32,7 +33,11 @@ class PaparazziRunLineMarkerContributor : RunLineMarkerContributor() {
             if (psiClass != null && psiMethod != null) {
                 return Info(
                     AllIcons.RunConfigurations.TestState.Run,
-                    arrayOf(RecordPaparazziAction(psiClass, psiMethod), VerifyPaparazziAction(psiClass, psiMethod)),
+                    arrayOf(
+                        RecordPaparazziAction(psiClass, psiMethod),
+                        VerifyPaparazziAction(psiClass, psiMethod),
+                        DeleteFileAction(psiClass = psiClass, psiMethod = psiMethod)
+                    ),
                     null
                 )
             }
@@ -40,7 +45,11 @@ class PaparazziRunLineMarkerContributor : RunLineMarkerContributor() {
             if (testClass != null) {
                 return Info(
                     AllIcons.RunConfigurations.TestState.Run,
-                    arrayOf(RecordPaparazziAction(testClass, null), VerifyPaparazziAction(testClass, null)),
+                    arrayOf(
+                        RecordPaparazziAction(testClass, null),
+                        VerifyPaparazziAction(testClass, null),
+                        DeleteFileAction(psiClass = testClass)
+                    ),
                     null
                 )
             }

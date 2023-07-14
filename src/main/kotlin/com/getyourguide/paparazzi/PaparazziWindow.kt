@@ -136,7 +136,7 @@ private class ContextMenuHandler(
             val snapshot = model.getElementAt(index)
             val actionGroup = DefaultActionGroup(
                 OpenFileAction(snapshot.file),
-                DeleteFileAction(snapshot.file)
+                DeleteFileAction(listOf(snapshot.file))
             )
             val popupMenu = actionManager.createActionPopupMenu(ActionPlaces.POPUP, actionGroup)
             popupMenu.setTargetComponent(list)
