@@ -1,15 +1,18 @@
 package com.getyourguide.paparazzi
 
+import com.getyourguide.paparazzi.actions.OpenFileAction
 import com.getyourguide.paparazzi.service.HORIZONTAL_PADDING
 import com.getyourguide.paparazzi.service.Snapshot
 import com.getyourguide.paparazzi.service.service
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
@@ -21,6 +24,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Insets
+import java.awt.Point
 import java.awt.Rectangle
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
@@ -49,9 +53,10 @@ internal class PaparazziWindowPanelImpl(toolWindow: ToolWindow, project: Project
     }
 
     init {
-        val content = ContentFactory.SERVICE.getInstance().createContent(this, "", false)
+        val content = ContentFactory.getInstance().createContent(this, "", false)
         toolWindow.contentManager.addContent(content)
         list.cellRenderer = Renderer(project)
+        list.addMouseListener(ContextMenuHandler(list, ActionManager.getInstance()))
 
         setContent(getContentPanel())
         project.service.panel = this
@@ -115,6 +120,25 @@ internal class Renderer(private val project: Project) : ListCellRenderer<Snapsho
             border = BorderFactory.createEmptyBorder(32, HORIZONTAL_PADDING, 32, HORIZONTAL_PADDING)
             add(title)
             add(snapshot)
+        }
+    }
+}
+
+private class ContextMenuHandler(
+    val list: JBList<Snapshot>,
+    val actionManager: ActionManager
+) : PopupHandler() {
+    override fun invokePopup(comp: Component?, x: Int, y: Int) {
+        val index = list.locationToIndex(Point(x, y))
+        val model = list.model
+        if (index < model.size) {
+            val snapshot = model.getElementAt(index)
+            val actionGroup = DefaultActionGroup(
+                OpenFileAction(snapshot.file)
+            )
+            val popupMenu = actionManager.createActionPopupMenu(ActionPlaces.POPUP, actionGroup)
+            popupMenu.setTargetComponent(list)
+            popupMenu.component.show(comp, x, y)
         }
     }
 }
