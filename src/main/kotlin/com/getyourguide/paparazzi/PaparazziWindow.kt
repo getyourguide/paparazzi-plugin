@@ -1,5 +1,6 @@
 package com.getyourguide.paparazzi
 
+import com.getyourguide.paparazzi.actions.DeleteFileAction
 import com.getyourguide.paparazzi.actions.OpenFileAction
 import com.getyourguide.paparazzi.service.HORIZONTAL_PADDING
 import com.getyourguide.paparazzi.service.Snapshot
@@ -134,7 +135,8 @@ private class ContextMenuHandler(
         if (index < model.size) {
             val snapshot = model.getElementAt(index)
             val actionGroup = DefaultActionGroup(
-                OpenFileAction(snapshot.file)
+                OpenFileAction(snapshot.file),
+                DeleteFileAction(snapshot.file)
             )
             val popupMenu = actionManager.createActionPopupMenu(ActionPlaces.POPUP, actionGroup)
             popupMenu.setTargetComponent(list)
