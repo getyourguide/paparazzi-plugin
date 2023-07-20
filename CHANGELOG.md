@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1
+
+- Open snapshots in Editor from the tool window
+- Delete individual snapshots directly from tool window
+- Delete snapshots for individual test or for entire test class
+
 ## 1.0
 
 - Android Electric Eel Beta and Flamingo Canary are supported with limitations
