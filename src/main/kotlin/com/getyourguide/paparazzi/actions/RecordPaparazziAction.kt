@@ -3,7 +3,7 @@ package com.getyourguide.paparazzi.actions
 import com.getyourguide.paparazzi.file
 import com.getyourguide.paparazzi.markers.getQualifiedTestName
 import com.getyourguide.paparazzi.markers.runGradle
-import com.getyourguide.paparazzi.modulePath
+import com.getyourguide.paparazzi.testModulePath
 import com.getyourguide.paparazzi.service.service
 import com.intellij.icons.AllIcons.Debugger.Db_set_breakpoint
 import com.intellij.openapi.actionSystem.AnAction
@@ -28,7 +28,7 @@ class RecordPaparazziAction(private val psiClass: PsiClass, private val psiMetho
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val file = psiClass.file() ?: return
-        val modulePath = project.modulePath(file) ?: return
+        val modulePath = project.testModulePath(file) ?: return
         val testName = getQualifiedTestName(psiClass, psiMethod)
         val gradleCommand = project.service.settings.recordSnapshotsCommand
         val scriptParams = project.service.settings.recordScriptParams
