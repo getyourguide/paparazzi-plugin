@@ -16,13 +16,11 @@ import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.util.concurrency.AppExecutorUtil
-import org.jetbrains.kotlin.idea.base.facet.isTestModule
 import org.jetbrains.kotlin.idea.util.projectStructure.getModule
 import org.jetbrains.kotlin.idea.util.projectStructure.getModuleDir
 import org.jetbrains.kotlin.psi.psiUtil.parents
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.toUElement
-import java.io.File
 import java.util.concurrent.Callable
 
 internal fun VirtualFile.toSnapshots(project: Project, isFailure: Boolean): List<Snapshot> {
@@ -56,15 +54,11 @@ internal fun VirtualFile.methods(project: Project): List<String> {
     return psiClassOwner?.methods() ?: emptyList()
 }
 
-/**
- * Get the test module path that contains the file, searching in all project test modules.
- */
-internal fun Project.testModulePath(file: VirtualFile): String? {
+internal fun Project.modulePath(file: VirtualFile): String? {
     return modules
         .asSequence()
-        .filter { it.isTestModule }
-        .firstOrNull { File(it.getModuleDir()).walk().find { it.path == file.path } != null }
-        ?.getModuleDir()
+        .map { it.getModuleDir() }
+        .firstOrNull { file.path.startsWith(it) }
 }
 
 internal inline fun <reified T> nonBlocking(crossinline asyncAction: () -> T, crossinline uiThreadAction: (T) -> Unit) {
@@ -96,7 +90,7 @@ private fun VirtualFile.snapshotName(qualifiedTestName: String): String {
 }
 
 private fun Project.recordedSnapshots(file: VirtualFile): List<VirtualFile> {
-    val modulePath = testModulePath(file)
+    val modulePath = modulePath(file)
     return if (modulePath != null) {
         LocalFileSystem.getInstance().findFileByPath(modulePath)?.findChild("src")?.findChild("test")
     } else {
@@ -105,7 +99,7 @@ private fun Project.recordedSnapshots(file: VirtualFile): List<VirtualFile> {
 }
 
 private fun Project.failureDiffSnapshots(file: VirtualFile): List<VirtualFile> {
-    val modulePath = testModulePath(file)
+    val modulePath = modulePath(file)
     val projectPath = basePath
     return if (modulePath != null) {
         LocalFileSystem.getInstance().findFileByPath(modulePath)?.findChild("out")
