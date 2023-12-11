@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.getyourguide"
-version = "1.1"
+version = "1.1.2023.2"
 
 repositories {
     mavenCentral()
@@ -13,7 +13,7 @@ repositories {
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
-    version.set("2023.1.4")
+    version.set("2023.2")
     plugins.set(listOf("android", "Kotlin", "java", "gradle"))
 
     tasks {
@@ -39,8 +39,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("210") // Support from Android Studio BumbleBee / IntelliJ iDEA 2021.1
-//        untilBuild.set("223.*")
+        sinceBuild.set("231")
+        untilBuild.set("233.*")
     }
 
     signPlugin {

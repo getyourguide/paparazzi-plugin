@@ -17,6 +17,38 @@
             <li>Fully supported for test files written in Java or Kotlin</li>
         </ul>
   ]]></description>
+    <change-notes><![CDATA[
+    <h3>1.1</h3>
+    <ul>
+      <li>Open snapshots in Editor from the tool window</li>
+      <li>Delete individual snapshots directly from tool window</li>
+      <li>Delete snapshots for individual test or for entire test class</li>
+    </ul>
+    <h3>1.0</h3>
+    <ul>
+      <li>Android Electric Eel Beta and Flamingo Canary are supported with limitations</li>
+      <li>Load snapshots on project startup for the test class opened in the editor</li>
+    </ul>
+    <h3>0.3</h3>
+    <ul>
+      <li>Added Settings screen to configure the Gradle command and add extra script parameters</li>
+      <li>Added the option to Record snapshots for individual tests or entire test class from the Editor</li>
+      <li>Added option to Verify snapshots for individual tests or entire class</li>
+    </ul>
+    <h3>0.2</h3>
+    <ul>
+      <li>Run the image fetching task in background thread</li>
+      <li>Execute the snapshot loading only if the Tool window is open</li>
+      <li>BugFixed - When switching between files in editor, scroll to the top of the snapshots in the tool window</li>
+      <li>BugFixed - When the "Show snapshot of current file" button is toggled to ON state, then reload the tool window</li>
+    </ul>
+    <h3>0.1</h3>
+    <ul>
+      <li>View screenshots for the current test file opened in the editor</li>
+      <li>Zoom options for Actual Size and Fit to Window</li>
+      <li>Refresh action that reloads the screenshots</li>
+    </ul>
+  ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.kotlin</depends>
