@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2
+
+- Record and Delete snapshots for a test file from the Project View under the More Run/Debug menu
+
 ## 1.1
 
 - Open snapshots in Editor from the tool window

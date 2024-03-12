@@ -1,14 +1,20 @@
 package com.getyourguide.paparazzi
 
 import com.getyourguide.paparazzi.service.Snapshot
+import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.CaretModel
+import com.intellij.openapi.externalSystem.model.execution.ExternalSystemTaskExecutionSettings
+import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode
+import com.intellij.openapi.externalSystem.task.TaskCallback
+import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.project.rootManager
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
@@ -19,9 +25,15 @@ import com.intellij.util.concurrency.AppExecutorUtil
 import org.jetbrains.kotlin.idea.util.projectStructure.getModule
 import org.jetbrains.kotlin.idea.util.projectStructure.getModuleDir
 import org.jetbrains.kotlin.psi.psiUtil.parents
+import org.jetbrains.plugins.gradle.util.GradleConstants
+import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.getContainingUFile
 import org.jetbrains.uast.toUElement
+import java.io.File
 import java.util.concurrent.Callable
+
+private const val PAPARAZZI_IMPORT = "app.cash.paparazzi.Paparazzi"
 
 internal fun VirtualFile.toSnapshots(project: Project, isFailure: Boolean): List<Snapshot> {
     val psiFile = PsiManager.getInstance(project).findFile(this) as? PsiClassOwner
@@ -55,6 +67,13 @@ internal fun VirtualFile.methods(project: Project): List<String> {
 }
 
 internal fun Project.modulePath(file: VirtualFile): String? {
+    basePath?.let { projectPath ->
+        val relativePath = FileUtil.getRelativePath(projectPath, file.path, File.separatorChar)
+        val moduleName = relativePath?.split(File.separator)?.firstOrNull()
+        if (moduleName != null) {
+            return projectPath + File.separator + moduleName
+        }
+    }
     return modules
         .asSequence()
         .map { it.getModuleDir() }
@@ -67,6 +86,28 @@ internal inline fun <reified T> nonBlocking(crossinline asyncAction: () -> T, cr
     }).finishOnUiThread(ModalityState.defaultModalityState()) { T ->
         uiThreadAction(T)
     }.submit(AppExecutorUtil.getAppExecutorService())
+}
+
+internal fun UClass.isPaparazziClass(): Boolean {
+    if (hasImport(PAPARAZZI_IMPORT)) {
+        return true
+    } else {
+        javaPsi.supers.forEach { psiClass ->
+            if ((psiClass.toUElement() as? UClass)?.hasImport(PAPARAZZI_IMPORT) == true) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+internal fun UClass.hasImport(packageName: String): Boolean {
+    val uFile = getContainingUFile()
+    return uFile?.imports?.find { it.asSourceString().contains(packageName) } != null
+}
+
+internal fun PsiElement.containingUClass(): UClass? {
+    return (parents.toList().map { it.toUElement() }.find { it is UClass } as? UClass)
 }
 
 private fun PsiClassOwner.toSnapshots(snapshots: List<VirtualFile>, isFailure: Boolean): List<Snapshot> {

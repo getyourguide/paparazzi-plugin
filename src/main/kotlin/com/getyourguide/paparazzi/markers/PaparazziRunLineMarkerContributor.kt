@@ -3,6 +3,8 @@ package com.getyourguide.paparazzi.markers
 import com.getyourguide.paparazzi.actions.DeleteFileAction
 import com.getyourguide.paparazzi.actions.RecordPaparazziAction
 import com.getyourguide.paparazzi.actions.VerifyPaparazziAction
+import com.getyourguide.paparazzi.containingUClass
+import com.getyourguide.paparazzi.isPaparazziClass
 import com.intellij.codeInsight.TestFrameworks
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
@@ -15,15 +17,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
-import org.jetbrains.kotlin.psi.psiUtil.parents
 import org.jetbrains.plugins.gradle.util.GradleConstants
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UIdentifier
 import org.jetbrains.uast.UMethod
-import org.jetbrains.uast.getContainingUFile
 import org.jetbrains.uast.toUElement
-
-private const val PAPARAZZI_IMPORT = "app.cash.paparazzi.Paparazzi"
 
 class PaparazziRunLineMarkerContributor : RunLineMarkerContributor() {
 
@@ -88,26 +86,9 @@ class PaparazziRunLineMarkerContributor : RunLineMarkerContributor() {
     private fun PsiElement.isPaparazziTestClass(): Boolean {
         val uClass = containingUClass()
         if (uClass != null) {
-            if (uClass.hasImport(PAPARAZZI_IMPORT)) {
-                return true
-            } else {
-                uClass.javaPsi.supers.forEach { psiClass ->
-                    if ((psiClass.toUElement() as? UClass)?.hasImport(PAPARAZZI_IMPORT) == true) {
-                        return true
-                    }
-                }
-            }
+            if (uClass.isPaparazziClass()) return true
         }
         return false
-    }
-
-    private fun UClass.hasImport(packageName: String): Boolean {
-        val uFile = getContainingUFile()
-        return uFile?.imports?.find { it.asSourceString().contains(packageName) } != null
-    }
-
-    private fun PsiElement.containingUClass(): UClass? {
-        return (parents.toList().map { it.toUElement() }.find { it is UClass } as? UClass)
     }
 }
 

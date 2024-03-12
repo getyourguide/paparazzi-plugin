@@ -38,12 +38,12 @@ class DeleteFileAction(
             deleteSnapshots(project, files)
         }
     }
+}
 
-    private fun deleteSnapshots(project: Project, files: List<VirtualFile>) {
-        val psiFiles = files.mapNotNull { it.toPsiFile(project) }
-        DeleteHandler.deletePsiElement(psiFiles.toTypedArray(), project, true)
-        project.service.loadFromSelectedEditor(true)
-    }
+internal fun deleteSnapshots(project: Project, files: List<VirtualFile>) {
+    val psiFiles = files.mapNotNull { it.toPsiFile(project) }
+    DeleteHandler.deletePsiElement(psiFiles.toTypedArray(), project, true)
+    project.service.loadFromSelectedEditor(true)
 }
 
 private fun getActionName(files: List<VirtualFile>): String {
