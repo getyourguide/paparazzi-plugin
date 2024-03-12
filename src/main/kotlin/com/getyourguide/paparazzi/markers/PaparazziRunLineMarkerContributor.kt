@@ -106,7 +106,7 @@ internal fun runGradle(
     path: String,
     fullCommandLine: String,
     scriptParams: String,
-    callback: TaskCallback
+    callback: TaskCallback? = null
 ) {
     val settings = ExternalSystemTaskExecutionSettings()
     settings.externalProjectPath = path
