@@ -24,14 +24,21 @@ class GroupRecordAction : GroupAction(ACTION_NAME, AllIcons.Debugger.Db_set_brea
             val psiClass = uClass.javaPsi
             val testName = getQualifiedTestName(psiClass, null)
             runRecordTask(project, testName, modulePath, RecordTaskCallback(project, psiClass, null))
-        } else {
-            val psiDirectory = getPaparazziDirectory(e)
-            if (psiDirectory != null) {
-                val modulePath = project.modulePath(psiDirectory.virtualFile) ?: return
-                val psiPackage = psiDirectory.getPackage() ?: return
-                val testName = psiPackage.qualifiedName + ".*"
-                runRecordTask(project, testName, modulePath)
-            }
+            return
+        }
+        val psiDirectory = getPaparazziDirectory(e)
+        if (psiDirectory != null) {
+            val modulePath = project.modulePath(psiDirectory.virtualFile) ?: return
+            val psiPackage = psiDirectory.getPackage() ?: return
+            val testName = psiPackage.qualifiedName + ".*"
+            runRecordTask(project, testName, modulePath)
+            return
+        }
+        val module = getPaparazziModule(e)
+        if (module != null) {
+            val modulePath = project.modulePath(module.virtualFile) ?: return
+            runRecordTask(project, null, modulePath)
+            return
         }
     }
 

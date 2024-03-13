@@ -2,7 +2,7 @@
 
 ## 1.2
 
-- Record and Delete snapshots for a test class or package from the Project View under the More Run/Debug menu
+- Record and Delete snapshots for a test class, package or module from the Project View under the More Run/Debug menu
 
 ## 1.1
 

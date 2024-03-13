@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
+import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiRecursiveElementVisitor
@@ -18,7 +19,8 @@ abstract class GroupAction(name: String, icon: Icon) : AnAction(name, null, icon
 
     override fun update(e: AnActionEvent) {
         super.update(e)
-        e.presentation.isVisible = getPaparazziClass(e) != null || getPaparazziDirectory(e) != null
+        e.presentation.isVisible =
+            getPaparazziClass(e) != null || getPaparazziDirectory(e) != null || getPaparazziModule(e) != null
     }
 
     override fun getActionUpdateThread() = ActionUpdateThread.BGT
@@ -40,6 +42,12 @@ abstract class GroupAction(name: String, icon: Icon) : AnAction(name, null, icon
             }
         })
         return if (found) psiDirectory else null
+    }
+
+    protected fun getPaparazziModule(e: AnActionEvent): PsiDirectory? {
+        val psiDirectory = LangDataKeys.IDE_VIEW.getData(e.dataContext)?.directories?.firstOrNull() ?: return null
+        ModuleUtilCore.findModuleForPsiElement(psiDirectory) ?: return null
+        return psiDirectory
     }
 
     private fun PsiDirectory.isPackage(): Boolean {

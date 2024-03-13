@@ -12,7 +12,7 @@
             <li>View previously-recorded golden snapshots for the current test file opened in the editor</li>
             <li>View golden snapshots of the current focussed test method</li>
             <li>View failure diffs for the current test class or method</li>
-            <li>Record, Verify and Delete snapshots for individual tests or for entire test class</li>
+            <li>Record, Verify and Delete snapshots for individual tests or for entire test class, package or module</li>
             <li>Zoom options for Actual Size and Fit to Window</li>
             <li>Fully supported for test files written in Java or Kotlin</li>
         </ul>
@@ -20,7 +20,7 @@
     <change-notes><![CDATA[
     <h3>1.2</h3>
     <ul>
-      <li>Record and Delete snapshots for a test class or package from the Project View under the More Run/Debug menu</li>
+      <li>Record and Delete snapshots for a test class, package or module from the Project View under the More Run/Debug menu</li>
     </ul>
     <h3>1.1</h3>
     <ul>

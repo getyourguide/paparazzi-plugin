@@ -26,14 +26,23 @@ class GroupDeleteAction : GroupAction(ACTION_NAME, AllIcons.Actions.GC) {
             val snapshots = fileInfo.allSnapshots()
             val files = snapshots.map { it.file }
             deleteSnapshots(project, files)
-        } else {
-            val psiDirectory = getPaparazziDirectory(e)
-            if (psiDirectory != null) {
-                val fileInfoList = getPaparazziFileInfo(psiDirectory, project)
-                val snapshots = fileInfoList.flatMap { it.allSnapshots() }.map { it.file }
-                deleteSnapshots(project, snapshots)
-            }
+            return
         }
+        val psiDirectory = getPaparazziDirectory(e)
+        if (psiDirectory != null) {
+            val fileInfoList = getPaparazziFileInfo(psiDirectory, project)
+            val snapshots = fileInfoList.flatMap { it.allSnapshots() }.map { it.file }
+            deleteSnapshots(project, snapshots)
+            return
+        }
+        val module = getPaparazziModule(e)
+        if (module != null) {
+            val fileInfoList = getPaparazziFileInfo(module, project)
+            val snapshots = fileInfoList.flatMap { it.allSnapshots() }.map { it.file }
+            deleteSnapshots(project, snapshots)
+            return
+        }
+
     }
 
     private fun getPaparazziFileInfo(psiDirectory: PsiDirectory, project: Project): List<FileInfo> {
