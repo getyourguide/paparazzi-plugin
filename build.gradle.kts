@@ -1,11 +1,11 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.0"
-    id("org.jetbrains.intellij") version "1.15.0"
+    id("org.jetbrains.kotlin.jvm") version "1.9.10" // https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
+    id("org.jetbrains.intellij") version "1.17.2"
 }
 
 group = "com.getyourguide"
-version = "1.2.2023.2"
+version = "1.2.2023.3"
 
 repositories {
     mavenCentral()
@@ -13,8 +13,8 @@ repositories {
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
-    version.set("2023.2")
-    plugins.set(listOf("android", "Kotlin", "java", "gradle"))
+    version.set("2023.3")
+    plugins.set(listOf("Kotlin", "java", "gradle"))
 
     tasks {
         buildSearchableOptions {
