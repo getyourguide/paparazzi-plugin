@@ -1,6 +1,7 @@
 package com.getyourguide.paparazzi.actions
 
 import com.getyourguide.paparazzi.file
+import com.getyourguide.paparazzi.getModuleId
 import com.getyourguide.paparazzi.getProjectPath
 import com.getyourguide.paparazzi.gradleModuleData
 import com.getyourguide.paparazzi.markers.getQualifiedTestName
@@ -34,14 +35,20 @@ class VerifyPaparazziAction(private val psiClass: PsiClass, private val psiMetho
         val file = psiClass.file() ?: return
         val gradleData = project.gradleModuleData(file) ?: return
         val path = gradleData.getProjectPath() ?: project.basePath ?: return
+        val moduleId = gradleData.getModuleId()
         val testName = getQualifiedTestName(psiClass, psiMethod)
         val param = if (testName != null) "--tests $testName" else ""
-        val gradleCommand = "${gradleData.data.id}:${project.service.settings.verifySnapshotsCommand}"
+        val gradleTask = project.service.settings.verifySnapshotsCommand
         val scriptParams = project.service.settings.verifyScriptParams
+        val command = if (moduleId != null) {
+            "$moduleId:$gradleTask $param"
+        } else {
+            "$gradleTask $param"
+        }.trim()
         runGradle(
             project,
             path,
-            "$gradleCommand $param",
+            command,
             scriptParams,
             VerifyTaskCallback(project, psiClass, psiMethod)
         )

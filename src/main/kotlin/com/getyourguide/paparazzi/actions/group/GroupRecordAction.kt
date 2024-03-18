@@ -2,6 +2,7 @@ package com.getyourguide.paparazzi.actions.group
 
 import com.getyourguide.paparazzi.actions.RecordTaskCallback
 import com.getyourguide.paparazzi.file
+import com.getyourguide.paparazzi.getModuleId
 import com.getyourguide.paparazzi.getProjectPath
 import com.getyourguide.paparazzi.gradleModuleData
 import com.getyourguide.paparazzi.markers.getQualifiedTestName
@@ -27,7 +28,7 @@ class GroupRecordAction : GroupAction(ACTION_NAME, AllIcons.Debugger.Db_set_brea
             val testName = getQualifiedTestName(psiClass, null)
             runRecordTask(
                 project = project,
-                moduleId = gradleData.data.id,
+                moduleId = gradleData.getModuleId(),
                 testName = testName,
                 projectPath = projectPath,
                 callback = RecordTaskCallback(project, psiClass, null)
@@ -42,7 +43,7 @@ class GroupRecordAction : GroupAction(ACTION_NAME, AllIcons.Debugger.Db_set_brea
             val testName = psiPackage.qualifiedName + ".*"
             runRecordTask(
                 project = project,
-                moduleId = gradleData.data.id,
+                moduleId = gradleData.getModuleId(),
                 testName = testName,
                 projectPath = projectPath,
             )
@@ -54,7 +55,7 @@ class GroupRecordAction : GroupAction(ACTION_NAME, AllIcons.Debugger.Db_set_brea
             val projectPath = gradleData.getProjectPath() ?: project.basePath ?: return
             runRecordTask(
                 project = project,
-                moduleId = gradleData.data.id,
+                moduleId = gradleData.getModuleId(),
                 testName = null,
                 projectPath = projectPath,
             )
@@ -64,7 +65,7 @@ class GroupRecordAction : GroupAction(ACTION_NAME, AllIcons.Debugger.Db_set_brea
 
     private fun runRecordTask(
         project: Project,
-        moduleId: String,
+        moduleId: String?,
         testName: String?,
         projectPath: String,
         callback: RecordTaskCallback? = null,
@@ -72,10 +73,15 @@ class GroupRecordAction : GroupAction(ACTION_NAME, AllIcons.Debugger.Db_set_brea
         val gradleCommand = project.service.settings.recordSnapshotsCommand
         val scriptParams = project.service.settings.recordScriptParams
         val filters = if (testName != null) "--tests $testName" else ""
+        val command = if (moduleId != null) {
+            "$moduleId:$gradleCommand $filters"
+        } else {
+            "$gradleCommand $filters"
+        }.trim()
         runGradle(
             project,
             projectPath,
-            "$moduleId:$gradleCommand $filters",
+            command,
             scriptParams,
             callback
         )

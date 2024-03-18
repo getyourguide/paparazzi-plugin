@@ -10,10 +10,8 @@ import com.intellij.openapi.externalSystem.model.project.ModuleData
 import com.intellij.openapi.externalSystem.model.project.ProjectData
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.TextEditor
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
-import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -109,6 +107,7 @@ internal fun DataNode<ModuleData>.getProjectPath(): String? {
     return if (parent != null) {
         when (val data = parent.data) {
             is ModuleData -> {
+                @Suppress("UNCHECKED_CAST")
                 (parent as DataNode<ModuleData>).getProjectPath()
             }
 
@@ -123,6 +122,14 @@ internal fun DataNode<ModuleData>.getProjectPath(): String? {
     }
 }
 
+internal fun DataNode<ModuleData>.getModuleId(): String? {
+    return if (getProjectPath() == data.linkedExternalProjectPath) {
+        null
+    } else {
+        data.id
+    }
+}
+
 internal inline fun <reified T> nonBlocking(crossinline asyncAction: () -> T, crossinline uiThreadAction: (T) -> Unit) {
     ReadAction.nonBlocking(Callable {
         asyncAction()
@@ -132,7 +139,7 @@ internal inline fun <reified T> nonBlocking(crossinline asyncAction: () -> T, cr
 }
 
 internal fun UClass.isPaparazziClass(): Boolean {
-    return fields.any { field -> field.isPaparazziField() } || supers.any { superClass ->
+    return fields.any { field -> field.isPaparazziField() } || javaPsi.supers.any { superClass ->
         superClass.fields.any { field -> field.isPaparazziField() }
     }
 }
@@ -207,13 +214,6 @@ private fun Project.failureDiffSnapshots(file: VirtualFile): List<VirtualFile> {
         } ?: emptyList()
     } else emptyList()
 }
-
-private fun Module.hasFile(
-    file: VirtualFile,
-): Boolean =
-    ModuleRootManager.getInstance(this)
-        .sourceRoots
-        .any { root -> file.path.startsWith(root.path) }
 
 private fun PsiField.isPaparazziField(): Boolean {
     val psiClass = PsiTypesUtil.getPsiClass(type)
