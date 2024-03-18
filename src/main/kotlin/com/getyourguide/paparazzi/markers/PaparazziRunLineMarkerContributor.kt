@@ -5,6 +5,7 @@ import com.getyourguide.paparazzi.actions.RecordPaparazziAction
 import com.getyourguide.paparazzi.actions.VerifyPaparazziAction
 import com.getyourguide.paparazzi.containingUClass
 import com.getyourguide.paparazzi.isPaparazziClass
+import com.getyourguide.paparazzi.isParametrizedTest
 import com.intellij.codeInsight.TestFrameworks
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
@@ -86,6 +87,7 @@ class PaparazziRunLineMarkerContributor : RunLineMarkerContributor() {
     private fun PsiElement.isPaparazziTestClass(): Boolean {
         val uClass = containingUClass()
         if (uClass != null) {
+
             if (uClass.isPaparazziClass()) return true
         }
         return false
@@ -95,12 +97,14 @@ class PaparazziRunLineMarkerContributor : RunLineMarkerContributor() {
 internal fun getQualifiedTestName(psiClass: PsiClass, psiMethod: PsiMethod?): String? {
     val className = psiClass.qualifiedName
     if (className != null) {
-        val methodName = psiMethod?.name
+        var methodName = psiMethod?.name
+        if (isParametrizedTest(psiClass, psiMethod) && methodName != null) {
+            methodName += "[*]"
+        }
         return if (methodName != null) "$className.$methodName" else className
     }
     return null
 }
-
 internal fun runGradle(
     project: Project,
     path: String,

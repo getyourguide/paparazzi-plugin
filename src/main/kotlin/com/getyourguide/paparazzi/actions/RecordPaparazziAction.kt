@@ -1,9 +1,10 @@
 package com.getyourguide.paparazzi.actions
 
 import com.getyourguide.paparazzi.file
+import com.getyourguide.paparazzi.getProjectPath
+import com.getyourguide.paparazzi.gradleModuleData
 import com.getyourguide.paparazzi.markers.getQualifiedTestName
 import com.getyourguide.paparazzi.markers.runGradle
-import com.getyourguide.paparazzi.modulePath
 import com.getyourguide.paparazzi.service.service
 import com.intellij.icons.AllIcons.Debugger.Db_set_breakpoint
 import com.intellij.openapi.actionSystem.AnAction
@@ -28,14 +29,15 @@ class RecordPaparazziAction(private val psiClass: PsiClass, private val psiMetho
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val file = psiClass.file() ?: return
-        val modulePath = project.modulePath(file) ?: return
+        val gradleData = project.gradleModuleData(file) ?: return
+        val path = gradleData.getProjectPath() ?: project.basePath ?: return
         val testName = getQualifiedTestName(psiClass, psiMethod)
-        val gradleCommand = project.service.settings.recordSnapshotsCommand
+        val gradleCommand = "${gradleData.data.id}:${project.service.settings.recordSnapshotsCommand}"
         val scriptParams = project.service.settings.recordScriptParams
         val filters = if (testName != null) "--tests $testName" else ""
         runGradle(
             project,
-            modulePath,
+            path,
             "$gradleCommand $filters",
             scriptParams,
             RecordTaskCallback(project, psiClass, psiMethod)
