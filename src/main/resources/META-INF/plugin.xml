@@ -60,6 +60,8 @@
     <depends>com.intellij.gradle</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <externalSystemTaskNotificationListener
+            implementation="com.getyourguide.paparazzi.gradle.GradleSystemListener"/>
         <toolWindow factoryClass="com.getyourguide.paparazzi.PaparazziWindow" id="Paparazzi" anchor="right"
                     icon="/icons/icon.svg"/>
         <projectService serviceInterface="com.getyourguide.paparazzi.service.MainService"

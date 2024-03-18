@@ -1,9 +1,11 @@
 package com.getyourguide.paparazzi.actions
 
 import com.getyourguide.paparazzi.file
+import com.getyourguide.paparazzi.getModuleId
+import com.getyourguide.paparazzi.getProjectPath
+import com.getyourguide.paparazzi.gradleModuleData
 import com.getyourguide.paparazzi.markers.getQualifiedTestName
 import com.getyourguide.paparazzi.markers.runGradle
-import com.getyourguide.paparazzi.modulePath
 import com.getyourguide.paparazzi.nonBlocking
 import com.getyourguide.paparazzi.service.service
 import com.getyourguide.paparazzi.service.toFileInfo
@@ -31,15 +33,22 @@ class VerifyPaparazziAction(private val psiClass: PsiClass, private val psiMetho
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val file = psiClass.file() ?: return
-        val modulePath = project.modulePath(file) ?: return
+        val gradleData = project.gradleModuleData(file) ?: return
+        val path = gradleData.getProjectPath() ?: project.basePath ?: return
+        val moduleId = gradleData.getModuleId()
         val testName = getQualifiedTestName(psiClass, psiMethod)
         val param = if (testName != null) "--tests $testName" else ""
-        val gradleCommand = project.service.settings.verifySnapshotsCommand
+        val gradleTask = project.service.settings.verifySnapshotsCommand
         val scriptParams = project.service.settings.verifyScriptParams
+        val command = if (moduleId != null) {
+            "$moduleId:$gradleTask $param"
+        } else {
+            "$gradleTask $param"
+        }.trim()
         runGradle(
             project,
-            modulePath,
-            "$gradleCommand $param",
+            path,
+            command,
             scriptParams,
             VerifyTaskCallback(project, psiClass, psiMethod)
         )
