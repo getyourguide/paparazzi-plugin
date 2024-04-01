@@ -64,7 +64,7 @@ internal fun Project.modulePath(file: VirtualFile): String? {
     return modules.asSequence().map { it.getModuleDir() }.firstOrNull { file.path.startsWith(it) }
         ?: basePath?.let { projectPath ->
             val relativePath = FileUtil.getRelativePath(projectPath, file.path, File.separatorChar)
-            val moduleName = relativePath?.split(File.separator)?.firstOrNull()
+            val moduleName = relativePath?.substringBefore("/src")
             if (moduleName != null) projectPath + File.separator + moduleName else null
         }
 }
