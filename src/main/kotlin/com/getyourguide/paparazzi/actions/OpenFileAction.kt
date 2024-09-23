@@ -1,5 +1,6 @@
 package com.getyourguide.paparazzi.actions
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -19,4 +20,6 @@ class OpenFileAction(val file: VirtualFile) : AnAction(ACTION_NAME) {
             fileManager.openFile(file, false)
         }
     }
+
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
 }

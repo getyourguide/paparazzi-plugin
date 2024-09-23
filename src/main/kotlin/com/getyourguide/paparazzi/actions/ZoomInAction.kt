@@ -1,5 +1,6 @@
 package com.getyourguide.paparazzi.actions
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
@@ -12,4 +13,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class ZoomInAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) = Unit
+
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
 }

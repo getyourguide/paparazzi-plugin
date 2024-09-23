@@ -13,6 +13,7 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -21,6 +22,7 @@ import org.jetbrains.kotlin.idea.util.projectStructure.getModule
 import org.jetbrains.kotlin.idea.util.projectStructure.getModuleDir
 import org.jetbrains.kotlin.psi.psiUtil.parents
 import org.jetbrains.uast.UClass
+import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.getContainingUFile
 import org.jetbrains.uast.toUElement
@@ -101,7 +103,7 @@ internal fun PsiElement.containingUClass(): UClass? {
 
 private fun PsiClassOwner.toSnapshots(snapshots: List<VirtualFile>, isFailure: Boolean): List<Snapshot> {
     val prefix = if (isFailure) "delta-" else ""
-    return classes.flatMap { psiClass ->
+    return classes().flatMap { psiClass ->
         val name = "$prefix${packageName}_${psiClass.name}"
         snapshots.filter { it.name.startsWith(name) }.map {
             Snapshot(it, it.snapshotName(name))
@@ -109,8 +111,16 @@ private fun PsiClassOwner.toSnapshots(snapshots: List<VirtualFile>, isFailure: B
     }
 }
 
+private fun PsiClassOwner.classes(): List<PsiClass> {
+    var allClasses = classes.toList()
+    if (classes.isEmpty()) {
+        allClasses = (this.toUElement() as? UFile)?.classes?.map { it.javaPsi } ?: emptyList()
+    }
+    return allClasses
+}
+
 private fun PsiClassOwner.methods(): List<String> {
-    return classes.flatMap { psiClass ->
+    return classes().flatMap { psiClass ->
         psiClass.methods.map { it.name }
     }
 }

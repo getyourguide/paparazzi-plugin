@@ -1,6 +1,7 @@
 package com.getyourguide.paparazzi.actions
 
 import com.getyourguide.paparazzi.service.service
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
@@ -17,4 +18,6 @@ class FitZoomToWindowAction : AnAction() {
         val project = e.project ?: return
         e.presentation.isEnabled = !project.service.settings.isFitToWindow
     }
+
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
 }

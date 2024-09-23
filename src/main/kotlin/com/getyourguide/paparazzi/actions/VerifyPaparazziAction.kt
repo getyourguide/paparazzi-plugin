@@ -8,6 +8,7 @@ import com.getyourguide.paparazzi.nonBlocking
 import com.getyourguide.paparazzi.service.service
 import com.getyourguide.paparazzi.service.toFileInfo
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.WriteAction
@@ -44,6 +45,8 @@ class VerifyPaparazziAction(private val psiClass: PsiClass, private val psiMetho
             VerifyTaskCallback(project, psiClass, psiMethod)
         )
     }
+
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
 }
 
 internal class VerifyTaskCallback(

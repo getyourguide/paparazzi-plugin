@@ -1,6 +1,7 @@
 package com.getyourguide.paparazzi.actions
 
 import com.getyourguide.paparazzi.service.service
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
 
@@ -20,4 +21,6 @@ class AutoLoadMethodAction : ToggleAction() {
         project.service.isAutoLoadMethodEnabled = state
         if (state) project.service.loadFromSelectedEditor(false)
     }
+
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
 }

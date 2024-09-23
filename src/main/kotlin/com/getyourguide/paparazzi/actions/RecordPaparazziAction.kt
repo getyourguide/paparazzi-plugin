@@ -6,6 +6,7 @@ import com.getyourguide.paparazzi.markers.runGradle
 import com.getyourguide.paparazzi.modulePath
 import com.getyourguide.paparazzi.service.service
 import com.intellij.icons.AllIcons.Debugger.Db_set_breakpoint
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.externalSystem.task.TaskCallback
@@ -41,6 +42,8 @@ class RecordPaparazziAction(private val psiClass: PsiClass, private val psiMetho
             RecordTaskCallback(project, psiClass, psiMethod)
         )
     }
+
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
 }
 
 internal class RecordTaskCallback(

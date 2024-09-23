@@ -1,33 +1,36 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.10" // https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
-    id("org.jetbrains.intellij") version "1.17.2"
+    id("org.jetbrains.kotlin.jvm") version "1.9.24" // https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
+    id("org.jetbrains.intellij.platform") version "2.0.1" // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 }
 
 group = "com.getyourguide"
-version = "1.2.2023.3"
+version = "1.2.2024.2"
+
+val ideaVersion = "2024.2"
 
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
-// Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-intellij {
-    version.set("2023.3")
-    plugins.set(listOf("Kotlin", "java", "gradle"))
+dependencies {
+    intellijPlatform {
+        intellijIdeaCommunity(ideaVersion)
+        bundledPlugins("org.jetbrains.kotlin", "com.intellij.java", "com.intellij.gradle")
 
-    tasks {
-        buildSearchableOptions {
-            enabled = false
-        }
+        pluginVerifier()
+        zipSigner()
+        instrumentationTools()
     }
 }
 
 tasks {
     runIde {
-        // Absolute path to installed target Android Studio to use as
-        // IDE Development Instance (the "Contents" directory is macOS specific):
-        ideDir.set(file("/Applications/Android Studio.app/Contents"))
+        jvmArgs("-Xmx1g")
     }
     // Set the JVM compatibility versions
     withType<JavaCompile> {
@@ -39,8 +42,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("231")
-        untilBuild.set("233.*")
+        sinceBuild.set("241")
+        untilBuild.set("242.*")
     }
 
     signPlugin {
