@@ -4,6 +4,7 @@ import com.getyourguide.paparazzi.service.service
 import com.getyourguide.paparazzi.service.toFileInfo
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.DeleteHandler
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
@@ -38,6 +39,8 @@ class DeleteFileAction(
             deleteSnapshots(project, files)
         }
     }
+
+    override fun getActionUpdateThread() = ActionUpdateThread.EDT
 }
 
 internal fun deleteSnapshots(project: Project, files: List<VirtualFile>) {
