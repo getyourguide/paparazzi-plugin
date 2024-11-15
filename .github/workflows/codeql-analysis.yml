@@ -1,0 +1,25 @@
+name: CodeQL Manual Build
+
+strategy:
+  matrix:
+    include:
+      - language: java-kotlin
+        build-mode: manual
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  # Initializes CodeQL tools and creates a codebase for analysis.
+  - name: Initialize CodeQL
+    uses: github/codeql-action/init@v3
+    with:
+      languages: ${{ matrix.language }}
+  - if: ${{ matrix.build-mode == 'manual' }}
+    name: Build code
+    run: |
+      echo 'If you are using a "manual" build mode for one or more of the' \
+        'languages you are analyzing, replace this with the commands to build' \
+        'your code, for example:'
+      echo '  make bootstrap'
+      echo '  make release'
+      exit 1
