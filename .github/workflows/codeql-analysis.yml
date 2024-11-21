@@ -1,24 +1,37 @@
-name: CodeQL Manual Build
+name: "CodeQL"
 
-strategy:
-  matrix:
-    include:
-      - language: java-kotlin
-        build-mode: manual
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+on:
+  push:
+    branches: [ 'main' ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ 'main' ]
+  schedule:
+    - cron: '52 13 * * 6'
 
-  # Initializes CodeQL tools and creates a codebase for analysis.
-  - name: Initialize CodeQL
-    uses: github/codeql-action/init@v3
-    with:
-      languages: ${{ matrix.language }}
-  - if: ${{ matrix.build-mode == 'manual' }}
-    name: Build code
-    run: |
-      echo 'If you are using a "manual" build mode for one or more of the' \
-        'languages you are analyzing, replace this with the commands to build' \
-        'your code, for example:'
-      ./gradlew build
-      exit 1
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      matrix:
+        include:
+          - language: java-kotlin
+            build-mode: manual
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+      - name: Build code
+        run: |
+          ./gradlew build
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@main
