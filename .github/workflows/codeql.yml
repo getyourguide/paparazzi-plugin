@@ -15,6 +15,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      packages: read
       security-events: write
 
     steps:
@@ -31,6 +32,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: java-kotlin
+          build-mode: manual
       - name: Build code
         run: |
           ./gradlew buildPlugin
