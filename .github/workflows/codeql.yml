@@ -36,5 +36,8 @@ jobs:
       - name: Build code
         run: |
           ./gradlew buildPlugin
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@main
+        with:
+          category: "/language:java-kotlin"
