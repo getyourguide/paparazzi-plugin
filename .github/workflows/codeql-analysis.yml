@@ -20,6 +20,5 @@ steps:
       echo 'If you are using a "manual" build mode for one or more of the' \
         'languages you are analyzing, replace this with the commands to build' \
         'your code, for example:'
-      echo '  make bootstrap'
-      echo '  make release'
+      ./gradlew build
       exit 1
