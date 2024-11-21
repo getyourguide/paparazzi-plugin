@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'temurin'
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
