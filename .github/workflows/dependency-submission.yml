@@ -7,6 +7,8 @@ on:
 jobs:
   maintenance_workflow:
     runs-on: ubuntu-latest
+    env:
+      CODEARTIFACT_AUTH_TOKEN: ${{ secrets.CODEARTIFACT_AUTH_TOKEN }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4.2.1
@@ -18,6 +20,7 @@ jobs:
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@v4.1.0
         with:
+          develocity-access-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
           gradle-version: wrapper
           dependency-graph: generate-and-submit
           # Include only relevant configurations
