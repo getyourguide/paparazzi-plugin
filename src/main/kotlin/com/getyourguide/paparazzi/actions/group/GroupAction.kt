@@ -1,11 +1,14 @@
 package com.getyourguide.paparazzi.actions.group
 
 import com.getyourguide.paparazzi.isPaparazziClass
+import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
-import com.intellij.openapi.module.ModuleUtilCore
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiRecursiveElementVisitor
@@ -45,12 +48,21 @@ abstract class GroupAction(name: String, icon: Icon) : AnAction(name, null, icon
     }
 
     protected fun getPaparazziModule(e: AnActionEvent): PsiDirectory? {
-        val psiDirectory = LangDataKeys.IDE_VIEW.getData(e.dataContext)?.directories?.firstOrNull() ?: return null
-        ModuleUtilCore.findModuleForPsiElement(psiDirectory) ?: return null
-        return psiDirectory
+        val selectedItem = LangDataKeys.SELECTED_ITEMS.getData(e.dataContext)?.firstOrNull()
+        return if (selectedItem is PsiDirectoryNode && isTestModule(selectedItem.value)) selectedItem.value else null
     }
 
     private fun PsiDirectory.isPackage(): Boolean {
         return getPackage()?.qualifiedName?.isNotEmpty() == true
+    }
+
+    private fun isTestModule(directory: PsiDirectory): Boolean {
+        val project = directory.project
+        val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+        val module: Module? = fileIndex.getModuleForFile(directory.virtualFile)
+
+        return module?.let {
+            ModuleRootManager.getInstance(it).fileIndex.isInTestSourceContent(directory.virtualFile)
+        } ?: false
     }
 }
